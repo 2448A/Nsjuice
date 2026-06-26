@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS PULP | VIP Menu</title>
+    <title>NS PULP | Premium Menu</title>
     <style>
         body {
             background-color: #FFFFFF;
@@ -15,11 +15,10 @@
             border-bottom: 3px solid #CC8400; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         h1 {
-            color: #CC8400; /* Premium Gold/Orange */
+            color: #CC8400;
             font-size: 2.8em; margin: 0; letter-spacing: 2px; text-transform: uppercase;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-        .tagline { color: #5C4033; font-weight: 600; margin-top: 5px; letter-spacing: 1px; }
+        .tagline { color: #5C4033; font-weight: 600; margin-top: 5px; }
         
         .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
         
@@ -30,40 +29,44 @@
         
         .menu-item {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px dashed #ddd;
+            padding: 12px 0; border-bottom: 1px dashed #ddd; flex-wrap: wrap; gap: 10px;
         }
-        .item-name { font-weight: 500; font-size: 1.1em; color: #333; }
+        .item-name { font-weight: 500; font-size: 1.05em; color: #333; min-width: 120px; }
         
-        .price-group { display: flex; gap: 5px; }
+        .price-group { display: flex; gap: 5px; flex-wrap: wrap; }
         .btn-price {
-            background-color: #5C4033; /* Brown from menu */
-            color: #fff; border: none; padding: 6px 12px;
-            border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;
+            background-color: #5C4033; color: #fff; border: none; padding: 6px 10px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em;
         }
-        .btn-price:active { background-color: #CC8400; transform: scale(0.95); }
+        .btn-price:active { background-color: #CC8400; }
         
         .cart-section {
             background-color: #f9f9f9; border: 2px solid #5C4033;
             border-radius: 10px; padding: 20px; margin-top: 40px; margin-bottom: 40px;
         }
-        #cart-items { font-size: 1em; color: #555; margin-bottom: 15px; line-height: 1.8; }
-        .total-bill { font-size: 1.4em; font-weight: bold; color: #5C4033; border-top: 2px solid #ccc; padding-top: 10px; }
+        .cart-item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;
+        }
+        .remove-btn {
+            background-color: #ff4d4d; color: white; border: none;
+            border-radius: 3px; padding: 2px 8px; cursor: pointer; font-weight: bold; margin-left: 10px;
+        }
+        
+        .total-bill { font-size: 1.4em; font-weight: bold; color: #5C4033; border-top: 2px solid #ccc; padding-top: 10px; margin-top: 10px; }
         
         .input-field {
             width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc;
             border-radius: 5px; box-sizing: border-box; font-size: 1em;
         }
         
-        .payment-box {
-            display: none; background-color: #e8f5e9; border: 1px solid #4caf50;
-            padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;
-        }
-        
         .action-btn {
-            background-color: #CC8400; color: white; width: 100%; padding: 15px;
-            border: none; border-radius: 5px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 10px;
+            color: white; width: 100%; padding: 15px; border: none; 
+            border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
-        .whatsapp-btn { background-color: #25D366; display: none; }
+        .btn-checkout { background-color: #CC8400; }
+        .btn-pay { background-color: #673AB7; display: none; } /* Purple for UPI */
+        .btn-wa { background-color: #25D366; display: none; } /* Green for WA */
         
     </style>
 </head>
@@ -76,119 +79,127 @@
 
     <div class="container">
         
-        <!-- FRUIT JUICES -->
+        <!-- ================= FRUIT JUICES ================= -->
         <h2 class="category-title">Fruit Juices</h2>
-        <div class="menu-item">
-            <span class="item-name">🍊 Mousambi Juice</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Mousambi Juice (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('Mousambi Juice (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('Mousambi Juice (L)', 60)">L: 60</button>
-            </div>
-        </div>
-        <div class="menu-item">
-            <span class="item-name">🍉 Watermelon Juice</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Watermelon Juice (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('Watermelon Juice (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('Watermelon Juice (L)', 60)">L: 60</button>
-            </div>
-        </div>
+        <div id="fruit-juices-container"></div>
 
-        <!-- VEGETABLE JUICES -->
+        <!-- ================= VEGETABLE JUICES ================= -->
         <h2 class="category-title">Vegetable Juices</h2>
-        <div class="menu-item">
-            <span class="item-name">🥕 ABC Juice</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('ABC Juice (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('ABC Juice (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('ABC Juice (L)', 60)">L: 60</button>
-            </div>
-        </div>
-        <div class="menu-item">
-            <span class="item-name">🥬 Mix Vegetable</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Mix Veg (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('Mix Veg (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('Mix Veg (L)', 60)">L: 60</button>
-            </div>
-        </div>
+        <div id="veg-juices-container"></div>
 
-        <!-- NATURAL SHAKES -->
+        <!-- ================= NATURAL SHAKES ================= -->
         <h2 class="category-title">Natural Shakes</h2>
-        <div class="menu-item">
-            <span class="item-name">🍌 Banana Shake</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Banana Shake (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('Banana Shake (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('Banana Shake (L)', 60)">L: 60</button>
-            </div>
-        </div>
-        <div class="menu-item">
-            <span class="item-name">🍫 Oreo Shake</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Oreo Shake (S)', 40)">S: 40</button>
-                <button class="btn-price" onclick="add('Oreo Shake (M)', 50)">M: 50</button>
-                <button class="btn-price" onclick="add('Oreo Shake (L)', 60)">L: 60</button>
-            </div>
-        </div>
+        <div id="shakes-container"></div>
 
-        <!-- SNACKS -->
+        <!-- ================= SNACKS ================= -->
         <h2 class="category-title">Snacks</h2>
-        <div class="menu-item">
-            <span class="item-name">🥪 Veg Grill Sandwich</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Veg Grill Sandwich', 50)">Add: 50</button>
-            </div>
-        </div>
-        <div class="menu-item">
-            <span class="item-name">☕ Hot Coffee</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Hot Coffee', 30)">Add: 30</button>
-            </div>
-        </div>
-        <div class="menu-item">
-            <span class="item-name">🥐 Patties (Paneer)</span>
-            <div class="price-group">
-                <button class="btn-price" onclick="add('Paneer Patties', 20)">Add: 20</button>
-            </div>
-        </div>
+        <div id="snacks-container"></div>
 
-        <!-- CART & CHECKOUT SECTION -->
+        <!-- ================= CART SECTION ================= -->
         <div class="cart-section">
-            <h2 style="margin-top:0; color:#5C4033;">Your Order</h2>
+            <h2 style="margin-top:0; color:#5C4033;">🛒 Your Order</h2>
             <div id="cart-items">No items selected yet.</div>
             <div class="total-bill" id="total-bill">Total Amount: 0</div>
             
             <input type="text" id="customerName" class="input-field" placeholder="Enter Your Name / Table No.">
             
-            <!-- Step 1: Proceed to Pay -->
-            <button id="checkout-btn" class="action-btn" onclick="showPayment()">Proceed to Pay</button>
-
-            <!-- Step 2: Payment Details (Hidden initially) -->
-            <div id="payment-box" class="payment-box">
-                <h3 style="margin: 0 0 10px 0; color: #2e7d32;">Scan & Pay</h3>
-                <p><b>UPI ID:</b> nspulp@ybl</p>
-                <p style="font-size: 0.9em; color: #555;">Please pay the Total Amount above and enter the Transaction ID below to confirm.</p>
-                
-                <input type="text" id="utrNumber" class="input-field" placeholder="Enter 12-digit UTR / Txn ID" onkeyup="checkUTR()">
-                
-                <!-- Step 3: Final WhatsApp Button -->
-                <button id="wa-btn" class="action-btn whatsapp-btn" onclick="sendOrder()">Send Confirmed Order</button>
-            </div>
+            <!-- BUTTONS -->
+            <button id="checkout-btn" class="action-btn btn-checkout" onclick="showPayment()">Proceed to Checkout</button>
+            
+            <button id="pay-btn" class="action-btn btn-pay" onclick="payViaUPI()">📱 Pay via UPI App (GPay/PhonePe)</button>
+            
+            <button id="wa-btn" class="action-btn btn-wa" onclick="sendOrder()">✅ Send Confirmed Order</button>
+            <p id="pay-hint" style="display:none; font-size:0.85em; color:#555; text-align:center;">Clicking "Pay" will open your UPI app. After payment, click "Send Confirmed Order".</p>
         </div>
 
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // --- MENU DATA ---
+        const fruitJuices = [
+            { name: "Mousambi Juice", s: 40, m: 50, l: 60 }, { name: "Orange Juice", s: 40, m: 50, l: 60 },
+            { name: "Mix Fruit Juice", s: 40, m: 50, l: 60 }, { name: "Pineapple Juice", s: 40, m: 50, l: 60 },
+            { name: "Watermelon Juice", s: 40, m: 50, l: 60 }, { name: "Sweet Lime Juice", s: 40, m: 50, l: 60 },
+            { name: "Ash Gourd (Petha)", s: 30, m: 40, l: 50 }
+        ];
+        
+        const vegJuices = [
+            { name: "Mix Vegetable Juice", s: 40, m: 50, l: 60 }, { name: "Gajar (Carrot) Juice", s: 30, m: 40, l: 50 },
+            { name: "ABC Juice", s: 40, m: 50, l: 60 }, { name: "Chukandar (Beetroot)", s: 50, m: 60, l: 70 }
+        ];
+
+        const shakes = [
+            { name: "Banana", s: 40, m: 50, l: 60 }, { name: "Banana Chocolate", s: 50, m: 60, l: 70 },
+            { name: "Banana Peanut", s: 50, m: 60, l: 70 }, { name: "Mango", s: 40, m: 50, l: 60 },
+            { name: "Mango Butter Scotch", s: 50, m: 60, l: 70 }, { name: "Papaya", s: 40, m: 50, l: 60 },
+            { name: "Mix Fruit Shake", s: 40, m: 50, l: 60 }, { name: "Cheeku", s: 40, m: 50, l: 60 },
+            { name: "Coconut Shake", s: 40, m: 50, l: 60 }, { name: "Fruit Cream Shake", s: 50, m: 60, l: 70 },
+            { name: "Apple", s: 40, m: 50, l: 60 }, { name: "Khajur Shake", s: 50, m: 60, l: 70 },
+            { name: "Khajur Peanut", s: 60, m: 70, l: 80 }, { name: "Khajur Banana Peanut", s: 60, m: 70, l: 80 },
+            { name: "Chocolate Shake", s: 40, m: 50, l: 60 }, { name: "Oreo Shake", s: 40, m: 50, l: 60 },
+            { name: "Kit-Kat Shake", s: 50, m: 60, l: 70 }, { name: "Cold Coffee", s: 40, m: 50, l: 60 },
+            { name: "Vanilla", s: 50, m: 60, l: 70 }, { name: "Strawberry Shake", s: 40, m: 50, l: 60 },
+            { name: "Dry Fruit Milk", s: 60, m: 70, l: 80 }, { name: "Protein Shake", s: 60, m: 70, l: 80 },
+            { name: "Butterscotch Milk", s: 50, m: 60, l: 70 }, { name: "Black Currant Milk", s: 50, m: 60, l: 70 }
+        ];
+
+        const snacks = [
+            { name: "Chai", price: 20 }, { name: "Hot Coffee", price: 30 },
+            { name: "Patties (Aloo)", price: 15 }, { name: "Patties (Paneer)", price: 20 },
+            { name: "Veg Grill Sandwich", price: 50 }, { name: "Healthy Sandwich", price: 60 },
+            { name: "Bun Maska", price: 30 }, { name: "Hot Chocolate", price: 40 }
+        ];
+
+        // --- RENDER MENU FUNCTONS ---
+        function renderSML(items, containerId) {
+            let html = "";
+            items.forEach(item => {
+                html += `<div class="menu-item"><span class="item-name">${item.name}</span><div class="price-group">
+                <button class="btn-price" onclick="add('${item.name} (S)', ${item.s})">S:${item.s}</button>
+                <button class="btn-price" onclick="add('${item.name} (M)', ${item.m})">M:${item.m}</button>
+                <button class="btn-price" onclick="add('${item.name} (L)', ${item.l})">L:${item.l}</button>
+                </div></div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function renderSnacks(items, containerId) {
+            let html = "";
+            items.forEach(item => {
+                html += `<div class="menu-item"><span class="item-name">${item.name}</span><div class="price-group">
+                <button class="btn-price" onclick="add('${item.name}', ${item.price})">Add: ${item.price}</button>
+                </div></div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        renderSML(fruitJuices, 'fruit-juices-container');
+        renderSML(vegJuices, 'veg-juices-container');
+        renderSML(shakes, 'shakes-container');
+        renderSnacks(snacks, 'snacks-container');
+
+        // --- CART LOGIC ---
         let cart = [];
         let total = 0;
 
-        function add(itemName, price) {
-            cart.push({ name: itemName, price: price });
-            total += price;
+        function add(itemName, itemPrice) {
+            cart.push({ name: itemName, price: itemPrice });
+            total += itemPrice;
             updateCart();
+        }
+
+        function remove(index) {
+            total -= cart[index].price;
+            cart.splice(index, 1);
+            updateCart();
+            
+            if (cart.length === 0) {
+                document.getElementById('checkout-btn').style.display = 'block';
+                document.getElementById('pay-btn').style.display = 'none';
+                document.getElementById('wa-btn').style.display = 'none';
+                document.getElementById('pay-hint').style.display = 'none';
+            }
         }
 
         function updateCart() {
@@ -197,7 +208,11 @@
                 cartDiv.innerHTML = "No items selected yet.";
             } else {
                 cartDiv.innerHTML = cart.map((item, index) => 
-                    `<div>✔️ ${item.name} <span style="float:right; color:#CC8400; font-weight:bold;">${item.price}</span></div>`
+                    `<div class="cart-item-row">
+                        <span>✔️ ${item.name}</span>
+                        <span><span style="color:#CC8400; font-weight:bold;">${item.price}</span>
+                        <button class="remove-btn" onclick="remove(${index})">❌</button></span>
+                    </div>`
                 ).join("");
             }
             document.getElementById('total-bill').innerHTML = "Total Amount: " + total;
@@ -209,28 +224,28 @@
             if (cart.length === 0) { alert("Please add some items to your cart!"); return; }
             
             document.getElementById('checkout-btn').style.display = 'none';
-            document.getElementById('payment-box').style.display = 'block';
+            document.getElementById('pay-btn').style.display = 'block';
+            document.getElementById('wa-btn').style.display = 'block';
+            document.getElementById('pay-hint').style.display = 'block';
         }
 
-        function checkUTR() {
-            let utr = document.getElementById('utrNumber').value;
-            let waBtn = document.getElementById('wa-btn');
-            // Agar UTR mein kuch type kiya hai tabhi WhatsApp button dikhega
-            if (utr.length > 3) {
-                waBtn.style.display = 'block';
-            } else {
-                waBtn.style.display = 'none';
-            }
+        // --- PAYMENT & WHATSAPP LOGIC ---
+        function payViaUPI() {
+            // YAHAN APNI ASLI UPI ID DAALEIN
+            let upiId = "nspulp@ybl"; 
+            let upiLink = `upi://pay?pa=${upiId}&pn=NS%20PULP&am=${total}&cu=INR`;
+            
+            // Ye link phone mein UPI app (PhonePe, GPay, Paytm) open karega
+            window.location.href = upiLink;
         }
 
         function sendOrder() {
             let name = document.getElementById('customerName').value;
-            let utr = document.getElementById('utrNumber').value;
 
-            let message = "*New VIP Order: NS PULP*%0A";
+            let message = "*New Order Received: NS PULP*%0A";
             message += "-----------------------%0A";
             message += "*Customer:* " + name + "%0A";
-            message += "*Payment UTR:* " + utr + " ✅%0A";
+            message += "*Payment Status:* Check Bank/Soundbox 🔔%0A";
             message += "-----------------------%0A*Items:*%0A";
             
             cart.forEach(item => { message += "▫️ " + item.name + " - " + item.price + "%0A"; });
@@ -238,9 +253,8 @@
             message += "-----------------------%0A";
             message += "*Total Bill:* " + total + "%0A";
             message += "-----------------------%0A";
-            message += "_Please verify payment and process order._";
 
-            // YAHAN APNA WHATSAPP NUMBER DAALIYE (91 lagakar)
+            // YAHAN AAPKA NUMBER ADDED HAI
             let phoneNumber = "918941806990"; 
 
             let whatsappLink = "https://wa.me/" + phoneNumber + "?text=" + message;
