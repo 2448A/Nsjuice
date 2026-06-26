@@ -3,82 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS Pulp | Order Online</title>
+    <title>NS PULP | VIP Menu</title>
     <style>
         body {
-            background-color: #FAF9F6;
+            background-color: #FFFFFF;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 20px; color: #333; text-align: center;
+            margin: 0; padding: 0; color: #333;
         }
-        h1 { color: #FF8C00; font-size: 3em; margin-bottom: 5px; letter-spacing: 2px; }
-        .tagline { color: #777; margin-bottom: 30px; font-weight: 300; }
+        .header {
+            text-align: center; padding: 20px; background-color: #fff;
+            border-bottom: 3px solid #CC8400; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #CC8400; /* Premium Gold/Orange */
+            font-size: 2.8em; margin: 0; letter-spacing: 2px; text-transform: uppercase;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .tagline { color: #5C4033; font-weight: 600; margin-top: 5px; letter-spacing: 1px; }
         
-        .menu-container, .cart-container {
-            background-color: #ffffff; max-width: 500px; margin: 0 auto 20px auto;
-            padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border-top: 5px solid #FF8C00; text-align: left;
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        
+        .category-title {
+            color: #CC8400; border-bottom: 2px solid #5C4033;
+            padding-bottom: 5px; margin-top: 30px; text-transform: uppercase;
         }
+        
         .menu-item {
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 1.2em; margin: 15px 0; padding-bottom: 15px; border-bottom: 1px dashed #eee;
+            padding: 12px 0; border-bottom: 1px dashed #ddd;
         }
-        .item-price { color: #FF8C00; font-weight: bold; margin-right: 15px; }
-        .add-btn {
-            background-color: #FF8C00; color: white; border: none; padding: 8px 15px;
-            border-radius: 20px; cursor: pointer; font-weight: bold;
-        }
-        .add-btn:active { background-color: #e07b00; }
+        .item-name { font-weight: 500; font-size: 1.1em; color: #333; }
         
-        #cart-items { font-size: 1.1em; color: #555; margin-bottom: 15px; line-height: 1.6; }
-        .total-bill { font-size: 1.3em; font-weight: bold; border-top: 2px solid #333; padding-top: 10px; }
+        .price-group { display: flex; gap: 5px; }
+        .btn-price {
+            background-color: #5C4033; /* Brown from menu */
+            color: #fff; border: none; padding: 6px 12px;
+            border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .btn-price:active { background-color: #CC8400; transform: scale(0.95); }
         
-        input[type="text"] {
-            width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc;
-            border-radius: 8px; box-sizing: border-box; font-size: 1em;
+        .cart-section {
+            background-color: #f9f9f9; border: 2px solid #5C4033;
+            border-radius: 10px; padding: 20px; margin-top: 40px; margin-bottom: 40px;
         }
-        .whatsapp-btn {
-            background-color: #25D366; color: white; width: 100%; padding: 15px;
-            border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer;
+        #cart-items { font-size: 1em; color: #555; margin-bottom: 15px; line-height: 1.8; }
+        .total-bill { font-size: 1.4em; font-weight: bold; color: #5C4033; border-top: 2px solid #ccc; padding-top: 10px; }
+        
+        .input-field {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc;
+            border-radius: 5px; box-sizing: border-box; font-size: 1em;
         }
-        .upi-section { margin-top: 15px; font-size: 0.9em; color: #666; text-align: center; }
+        
+        .payment-box {
+            display: none; background-color: #e8f5e9; border: 1px solid #4caf50;
+            padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;
+        }
+        
+        .action-btn {
+            background-color: #CC8400; color: white; width: 100%; padding: 15px;
+            border: none; border-radius: 5px; font-size: 1.2em; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+        .whatsapp-btn { background-color: #25D366; display: none; }
+        
     </style>
 </head>
 <body>
 
-    <h1>NS PULP</h1>
-    <div class="tagline">Premium Fresh Juices</div>
-
-    <!-- MENU SECTION -->
-    <div class="menu-container">
-        <h3>Our Menu</h3>
-        <div class="menu-item">
-            <span>🍊 Citrus Burst</span>
-            <div><span class="item-price">120</span><button class="add-btn" onclick="addToCart('Citrus Burst', 120)">Add</button></div>
-        </div>
-        <div class="menu-item">
-            <span>🥭 Mango Velvet</span>
-            <div><span class="item-price">150</span><button class="add-btn" onclick="addToCart('Mango Velvet', 150)">Add</button></div>
-        </div>
-        <div class="menu-item">
-            <span>🍉 Watermelon Breeze</span>
-            <div><span class="item-price">90</span><button class="add-btn" onclick="addToCart('Watermelon Breeze', 90)">Add</button></div>
-        </div>
+    <div class="header">
+        <h1>NS PULP</h1>
+        <div class="tagline">MADE WITH 100% FRESH INGREDIENTS & LOVE</div>
     </div>
 
-    <!-- CART SECTION -->
-    <div class="cart-container">
-        <h3>Your Order</h3>
-        <div id="cart-items">Cart is empty right now.</div>
-        <div class="total-bill" id="total-bill">Total: 0</div>
+    <div class="container">
         
-        <input type="text" id="customerName" placeholder="Enter Your Name or Table No.">
-        
-        <button class="whatsapp-btn" onclick="sendOrder()">Send Order via WhatsApp</button>
-        
-        <div class="upi-section">
-            <b>UPI Payment ID:</b> nspulp@ybl <br>
-            (Send order first, then pay via UPI)
+        <!-- FRUIT JUICES -->
+        <h2 class="category-title">Fruit Juices</h2>
+        <div class="menu-item">
+            <span class="item-name">🍊 Mousambi Juice</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Mousambi Juice (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('Mousambi Juice (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('Mousambi Juice (L)', 60)">L: 60</button>
+            </div>
         </div>
+        <div class="menu-item">
+            <span class="item-name">🍉 Watermelon Juice</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Watermelon Juice (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('Watermelon Juice (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('Watermelon Juice (L)', 60)">L: 60</button>
+            </div>
+        </div>
+
+        <!-- VEGETABLE JUICES -->
+        <h2 class="category-title">Vegetable Juices</h2>
+        <div class="menu-item">
+            <span class="item-name">🥕 ABC Juice</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('ABC Juice (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('ABC Juice (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('ABC Juice (L)', 60)">L: 60</button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span class="item-name">🥬 Mix Vegetable</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Mix Veg (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('Mix Veg (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('Mix Veg (L)', 60)">L: 60</button>
+            </div>
+        </div>
+
+        <!-- NATURAL SHAKES -->
+        <h2 class="category-title">Natural Shakes</h2>
+        <div class="menu-item">
+            <span class="item-name">🍌 Banana Shake</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Banana Shake (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('Banana Shake (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('Banana Shake (L)', 60)">L: 60</button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span class="item-name">🍫 Oreo Shake</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Oreo Shake (S)', 40)">S: 40</button>
+                <button class="btn-price" onclick="add('Oreo Shake (M)', 50)">M: 50</button>
+                <button class="btn-price" onclick="add('Oreo Shake (L)', 60)">L: 60</button>
+            </div>
+        </div>
+
+        <!-- SNACKS -->
+        <h2 class="category-title">Snacks</h2>
+        <div class="menu-item">
+            <span class="item-name">🥪 Veg Grill Sandwich</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Veg Grill Sandwich', 50)">Add: 50</button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span class="item-name">☕ Hot Coffee</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Hot Coffee', 30)">Add: 30</button>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span class="item-name">🥐 Patties (Paneer)</span>
+            <div class="price-group">
+                <button class="btn-price" onclick="add('Paneer Patties', 20)">Add: 20</button>
+            </div>
+        </div>
+
+        <!-- CART & CHECKOUT SECTION -->
+        <div class="cart-section">
+            <h2 style="margin-top:0; color:#5C4033;">Your Order</h2>
+            <div id="cart-items">No items selected yet.</div>
+            <div class="total-bill" id="total-bill">Total Amount: 0</div>
+            
+            <input type="text" id="customerName" class="input-field" placeholder="Enter Your Name / Table No.">
+            
+            <!-- Step 1: Proceed to Pay -->
+            <button id="checkout-btn" class="action-btn" onclick="showPayment()">Proceed to Pay</button>
+
+            <!-- Step 2: Payment Details (Hidden initially) -->
+            <div id="payment-box" class="payment-box">
+                <h3 style="margin: 0 0 10px 0; color: #2e7d32;">Scan & Pay</h3>
+                <p><b>UPI ID:</b> nspulp@ybl</p>
+                <p style="font-size: 0.9em; color: #555;">Please pay the Total Amount above and enter the Transaction ID below to confirm.</p>
+                
+                <input type="text" id="utrNumber" class="input-field" placeholder="Enter 12-digit UTR / Txn ID" onkeyup="checkUTR()">
+                
+                <!-- Step 3: Final WhatsApp Button -->
+                <button id="wa-btn" class="action-btn whatsapp-btn" onclick="sendOrder()">Send Confirmed Order</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
@@ -86,7 +185,7 @@
         let cart = [];
         let total = 0;
 
-        function addToCart(itemName, price) {
+        function add(itemName, price) {
             cart.push({ name: itemName, price: price });
             total += price;
             updateCart();
@@ -95,28 +194,54 @@
         function updateCart() {
             let cartDiv = document.getElementById('cart-items');
             if (cart.length === 0) {
-                cartDiv.innerHTML = "Cart is empty right now.";
+                cartDiv.innerHTML = "No items selected yet.";
             } else {
-                cartDiv.innerHTML = cart.map(item => "✔️ " + item.name + " (" + item.price + ")").join("<br>");
+                cartDiv.innerHTML = cart.map((item, index) => 
+                    `<div>✔️ ${item.name} <span style="float:right; color:#CC8400; font-weight:bold;">${item.price}</span></div>`
+                ).join("");
             }
-            document.getElementById('total-bill').innerHTML = "Total: " + total;
+            document.getElementById('total-bill').innerHTML = "Total Amount: " + total;
+        }
+
+        function showPayment() {
+            let name = document.getElementById('customerName').value;
+            if (!name) { alert("Please enter your Name or Table Number first!"); return; }
+            if (cart.length === 0) { alert("Please add some items to your cart!"); return; }
+            
+            document.getElementById('checkout-btn').style.display = 'none';
+            document.getElementById('payment-box').style.display = 'block';
+        }
+
+        function checkUTR() {
+            let utr = document.getElementById('utrNumber').value;
+            let waBtn = document.getElementById('wa-btn');
+            // Agar UTR mein kuch type kiya hai tabhi WhatsApp button dikhega
+            if (utr.length > 3) {
+                waBtn.style.display = 'block';
+            } else {
+                waBtn.style.display = 'none';
+            }
         }
 
         function sendOrder() {
             let name = document.getElementById('customerName').value;
-            if (!name) { alert("Please enter your Name or Table Number!"); return; }
-            if (cart.length === 0) { alert("Please add some items to your order first!"); return; }
+            let utr = document.getElementById('utrNumber').value;
 
-            // BANAO WHATSAPP MESSAGE
             let message = "*New VIP Order: NS PULP*%0A";
-            message += "*Customer/Table:* " + name + "%0A%0A";
-            message += "*Items:*%0A";
-            cart.forEach(item => { message += "- " + item.name + " (" + item.price + ")%0A"; });
-            message += "%0A*Total Bill:* " + total + "%0A";
-            message += "%0A_Please confirm the order._";
+            message += "-----------------------%0A";
+            message += "*Customer:* " + name + "%0A";
+            message += "*Payment UTR:* " + utr + " ✅%0A";
+            message += "-----------------------%0A*Items:*%0A";
+            
+            cart.forEach(item => { message += "▫️ " + item.name + " - " + item.price + "%0A"; });
+            
+            message += "-----------------------%0A";
+            message += "*Total Bill:* " + total + "%0A";
+            message += "-----------------------%0A";
+            message += "_Please verify payment and process order._";
 
-            // BHAII, YAHAN APNA NUMBER DAALNA (91 laga kar)
-            let phoneNumber = "918941806990"; 
+            // YAHAN APNA WHATSAPP NUMBER DAALIYE (91 lagakar)
+            let phoneNumber = "919876543210"; 
 
             let whatsappLink = "https://wa.me/" + phoneNumber + "?text=" + message;
             window.open(whatsappLink, "_blank");
