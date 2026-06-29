@@ -2,60 +2,239 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NS PULP | Official Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NS PULP | VIP Live Menu</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #fff; padding: 20px; }
-        .menu-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #ccc; }
-        .btn-add { background: #5C4033; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; }
-        .input-field { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .btn-confirm { background: #CC8400; color: white; padding: 15px; width: 100%; border: none; border-radius: 5px; font-weight: bold; }
-        #live-tracker { display: none; text-align: center; padding: 50px; }
+        body { background-color: #FFFFFF; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        .header { text-align: center; padding: 20px; background-color: #fff; border-bottom: 3px solid #CC8400; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        h1 { color: #CC8400; font-size: 2.8em; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+        .tagline { color: #5C4033; font-weight: 600; margin-top: 5px; }
+        
+        .main-content { max-width: 600px; margin: 20px auto; padding: 0 15px; flex-grow: 1; }
+        .category-title { color: #CC8400; border-bottom: 2px solid #5C4033; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; }
+        
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #ddd; }
+        .item-name { font-weight: 500; font-size: 1.05em; color: #333; }
+        
+        .price-group { display: flex; gap: 5px; }
+        .btn-price { background-color: #5C4033; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em; }
+        .btn-price:active { background-color: #CC8400; }
+        
+        /* CENTRALIZED ORDER SECTION */
+        .order-section { background-color: #f9f9f9; border: 2px solid #5C4033; border-radius: 10px; padding: 20px; margin-top: 40px; margin-bottom: 40px; text-align: center; }
+        .cart-item-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .remove-btn { background-color: #ff4d4d; color: white; border: none; border-radius: 3px; padding: 2px 8px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .total-bill { font-size: 1.4em; font-weight: bold; color: #5C4033; border-top: 2px solid #ccc; padding-top: 10px; margin-top: 10px; }
+        
+        .input-field { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
+        .action-btn { background-color: #CC8400; color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* UNIFIED TOKEN DISPLAY */
+        .token-display { display: none; background-color: #CC8400; color: white; font-size: 3em; padding: 20px; border-radius: 15px; display: inline-block; margin: 20px 0; font-weight: bold; }
+        .live-status { font-size: 1.5em; font-weight: bold; color: #5C4033; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h2>NS PULP MENU</h2>
-    <div id="menu-container"></div>
 
-    <div style="margin-top:30px; padding:20px; border: 2px solid #CC8400; border-radius: 10px;">
-        <h3>🛒 Your Order</h3>
-        <div id="cart-list">No items selected.</div>
-        <p><b>Total: ₹<span id="total-bill">0</span></b></p>
-        <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
-        <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (No Ice, Extra Salt, etc.)">
-        <input type="text" id="utrNumber" class="input-field" placeholder="UTR/Txn ID">
-        <button class="btn-confirm" onclick="placeCloudOrder()">CONFIRM ORDER</button>
+    <div class="header">
+        <h1>NS PULP</h1>
+        <div class="tagline">MADE WITH 100% FRESH INGREDIENTS & LOVE</div>
     </div>
 
-    <div id="live-tracker">
-        <h2 style="color: #CC8400;">Order Confirmed!</h2>
-        <h1 style="font-size: 4em;" id="display-token">#--</h1>
-        <p>Aapka order process ho raha hai...</p>
+    <div class="main-content">
+        
+        <h2 class="category-title">Fruit Juices</h2>
+        <div id="fruit-juices-container"></div>
+
+        <h2 class="category-title">Vegetable Juices</h2>
+        <div id="veg-juices-container"></div>
+
+        <h2 class="category-title">Natural Shakes</h2>
+        <div id="shakes-container"></div>
+
+        <h2 class="category-title">Snacks</h2>
+        <div id="snacks-container"></div>
+
+        <div class="order-section" id="cart-container">
+            <h2 style="margin-top:0; color:#5C4033;">🛒 Your Order</h2>
+            <div id="cart-items">No items selected yet.</div>
+            <div class="total-bill" id="total-bill">Total Amount: 0</div>
+            
+            <input type="text" id="customerName" class="input-field" placeholder="Enter Your Name / Table No.">
+            
+            <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (e.g. No ice, Sugar-free, extra salt)">
+            
+            <button id="order-btn" class="action-btn" onclick="placeOrder()">✅ Confirm Order & See Token</button>
+        </div>
+
+        <div class="order-section" id="status-container" style="display:none;">
+            <h2>Live Order Status</h2>
+            <div class="token-display" id="display-token">#--</div>
+            <div class="live-status" id="display-status">Waiting for Cafe to Accept...</div>
+            <p style="color: #777; margin-top: 30px;">This updates automatically. Please wait at counter.</p>
+        </div>
+
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU", authDomain: "nsjuice-07.firebaseapp.com", databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com", projectId: "nsjuice-07", storageBucket: "nsjuice-07.firebasestorage.app", messagingSenderId: "741674109700", appId: "1:741674109700:web:0ea165b3567f829c805e51" };
+        // AAPKI MASTER CHABI
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
+            authDomain: "nsjuice-07.firebaseapp.com",
+            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
+            projectId: "nsjuice-07",
+            storageBucket: "nsjuice-07.firebasestorage.app",
+            messagingSenderId: "741674109700",
+            appId: "1:741674109700:web:0ea165b3567f829c805e51"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const fullMenu = [{name: "Mousambi Juice", price: 50}, {name: "Orange Juice", price: 50}, {name: "Mango Shake", price: 60}, {name: "Cold Coffee", price: 50}, {name: "Veg Sandwich", price: 50}];
-        
-        let container = document.getElementById('menu-container');
-        fullMenu.forEach(item => {
-            container.innerHTML += `<div class="menu-item">${item.name} (₹${item.price}) <button class="btn-add" onclick="add('${item.name}', ${item.price})">Add</button></div>`;
-        });
+        // FULL MENU DATA (from images)
+        const fruitJuices = [
+            { name: "Mousambi Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Orange Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Mix Fruit Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Pineapple Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Watermelon Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Sweet Lime Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Ash Gourd (Petha)", prices: { s: 30, m: 40, l: 50 } },
+            { name: "Pomegranate Juice", prices: { s: "", m: "", l: "" } } // L missing in img
+        ];
+        const vegJuices = [
+            { name: "Mix Vegetable Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Gajar (Carrot) Juice", prices: { s: 30, m: 40, l: 50 } },
+            { name: "ABC Juice", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Chukandar (Beetroot)", prices: { s: 50, m: 60, l: 70 } }
+        ];
+        const shakes = [
+            { name: "Banana", prices: { s: 40, m: 50, l: 60 } }, { name: "Mango", prices: { s: 40, m: 50, l: 60 } },
+            { name: "Chocolate Shake", prices: { s: 40, m: 50, l: 60 } }, { name: "Kit-Kat Shake", prices: { s: 50, m: 60, l: 70 } },
+            { name: "Cold Coffee", prices: { s: 40, m: 50, l: 60 } }, { name: "Strawberry Shake", prices: { s: 40, m: 50, l: 60 } }
+            // Added some from images, full list can be put here
+        ];
+        const snacks = [
+            { name: "Chai", price: 20 }, { name: "Hot Coffee", price: 30 }, { name: "Kulhad Lassi", price: "" },
+            { name: "Veg Grill Sandwich", price: 50 }, { name: "Bun Maska", price: 30 }
+        ];
 
-        let cart = []; let total = 0;
-        function add(n, p) { cart.push({name: n, price: p}); total += p; document.getElementById('total-bill').innerText = total; document.getElementById('cart-list').innerText = cart.map(i=>i.name).join(', '); }
+        // RENDER FUNCTIONS
+        function renderSML(items, containerId) {
+            let html = "";
+            items.forEach(item => {
+                html += `<div class="menu-item">
+                    <span class="item-name">${item.name}</span>
+                    <div class="price-group">
+                        <button class="btn-price" onclick="add('${item.name} (S)', ${item.prices.s})">S:${item.prices.s}</button>
+                        <button class="btn-price" onclick="add('${item.name} (M)', ${item.prices.m})">M:${item.prices.m}</button>
+                        <button class="btn-price" onclick="add('${item.name} (L)', ${item.prices.l})">L:${item.prices.l}</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        }
 
-        function placeCloudOrder() {
+        function renderSnacks(items, containerId) {
+            let html = "";
+            items.forEach(item => {
+                html += `<div class="menu-item">
+                    <span class="item-name">${item.name}</span>
+                    <button class="btn-price" onclick="add('${item.name}', ${item.price})">Add: ${item.price}</button>
+                </div>`;
+            });
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        // INIT MENU
+        renderSML(fruitJuices, 'fruit-juices-container');
+        renderSML(vegJuices, 'veg-juices-container');
+        renderSML(shakes, 'shakes-container');
+        renderSnacks(snacks, 'snacks-container');
+
+        // CART LOGIC
+        let cart = [];
+        let total = 0;
+
+        function add(itemName, itemPrice) {
+            if(!itemPrice) { alert("Price not available for this combination"); return; }
+            cart.push({ name: itemName, price: itemPrice });
+            total += itemPrice;
+            updateCart();
+        }
+
+        function remove(index) {
+            total -= cart[index].price;
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function updateCart() {
+            let cartDiv = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                cartDiv.innerHTML = "No items selected yet.";
+            } else {
+                cartDiv.innerHTML = cart.map((item, index) => 
+                    `<div class="cart-item-row">
+                        <span>✔️ ${item.name}</span>
+                        <span>
+                            <span style="color:#CC8400; font-weight:bold;">${item.price}</span>
+                            <button class="remove-btn" onclick="remove(${index})">❌</button>
+                        </span>
+                    </div>`
+                ).join("");
+            }
+            document.getElementById('total-bill').innerHTML = "Total Amount: " + total;
+        }
+
+        // ORDER LOGIC
+        function placeOrder() {
             let name = document.getElementById('customerName').value;
-            if(!name || cart.length === 0) { alert("Name & Items zaroori hain!"); return; }
-            db.ref('order_counter').transaction((c) => (c || 0) + 1, (e, comm, snap) => {
-                if (comm) {
-                    db.ref('live_orders').push({ token: snap.val(), customer: name, remarks: document.getElementById('orderRemarks').value, items: cart, totalAmount: total, utr: document.getElementById('utrNumber').value, status: "Accepted" });
-                    document.body.innerHTML = `<h1>Token: #${snap.val()}</h1><p>Order Placed!</p>`;
+            let remarks = document.getElementById('orderRemarks').value;
+
+            if(!name) { alert("Table No / Name is required!"); return; }
+            if(cart.length === 0) { alert("Cart is empty!"); return; }
+
+            // Serial Token Logic (1, 2, 3...)
+            db.ref('order_counter').transaction((current) => {
+                return (current || 0) + 1;
+            }, (error, committed, snapshot) => {
+                if (committed) {
+                    let tokenNo = snapshot.val();
+                    
+                    // Order data
+                    let orderData = {
+                        token: tokenNo,
+                        customer: name,
+                        remarks: remarks, // Special Note added
+                        items: cart,
+                        totalAmount: total,
+                        status: "Pending", // Initial status
+                        timestamp: Date.now()
+                    };
+
+                    // Push to Database
+                    let newOrderRef = db.ref('live_orders').push();
+                    newOrderRef.set(orderData);
+
+                    // Switch screen to show unified status
+                    document.getElementById('cart-container').style.display = 'none';
+                    document.getElementById('status-container').style.display = 'block';
+                    document.getElementById('display-token').innerText = "#" + tokenNo;
+
+                    // Listen for Live Updates
+                    db.ref('live_orders/' + newOrderRef.key).on('value', (snap) => {
+                        let currentOrder = snap.val();
+                        let statusDiv = document.getElementById('display-status');
+                        
+                        // Status mapping
+                        if(currentOrder.status === "Pending") statusDiv.innerText = "Waiting for Accept... (Check back in 1-2 mins)";
+                        if(currentOrder.status === "Preparing") statusDiv.innerText = "👨‍🍳 Preparing... Almost there!";
+                        if(currentOrder.status === "Ready") statusDiv.innerText = "✅ ORDER IS READY! Please collect.";
+                    });
                 }
             });
         }
