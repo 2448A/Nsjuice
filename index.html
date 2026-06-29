@@ -2,106 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS PULP | VIP Live Menu</title>
-    
+    <title>NS PULP | Live Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
     <style>
-        body { background-color: #FFFFFF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; color: #333; }
-        .header { text-align: center; padding: 20px; background-color: #fff; border-bottom: 3px solid #CC8400; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1 { color: #CC8400; font-size: 2.8em; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
-        .tagline { color: #5C4033; font-weight: 600; margin-top: 5px; }
-        
-        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
-        .category-title { color: #CC8400; border-bottom: 2px solid #5C4033; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; }
-        
-        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #ddd; flex-wrap: wrap; gap: 10px; }
-        .item-name { font-weight: 500; font-size: 1.05em; color: #333; min-width: 120px; }
-        
-        .price-group { display: flex; gap: 5px; flex-wrap: wrap; }
-        .btn-price { background-color: #5C4033; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9em; }
-        .btn-price:active { background-color: #CC8400; }
-        
-        /* CART SECTION */
-        .cart-section { background-color: #f9f9f9; border: 2px solid #5C4033; border-radius: 10px; padding: 20px; margin-top: 40px; margin-bottom: 40px; }
-        .cart-item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .remove-btn { background-color: #ff4d4d; color: white; border: none; border-radius: 3px; padding: 2px 8px; cursor: pointer; font-weight: bold; margin-left: 10px; }
-        .total-bill { font-size: 1.4em; font-weight: bold; color: #5C4033; border-top: 2px solid #ccc; padding-top: 10px; margin-top: 10px; }
-        
-        .input-field { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em; }
-        .action-btn { color: white; width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-checkout { background-color: #CC8400; }
-        .btn-order { background-color: #25D366; display: none; }
-        
-        /* UPI BOX */
-        .upi-box { display: none; background-color: #e8f5e9; border: 1px solid #4caf50; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; }
-        
-        /* LIVE TRACKER STYLES */
-        #live-tracker { display: none; text-align: center; padding: 40px 20px; }
-        .token-box { background-color: #CC8400; color: white; font-size: 3em; padding: 20px; border-radius: 15px; display: inline-block; margin: 20px 0; font-weight: bold; }
-        .status-text { font-size: 1.5em; font-weight: bold; color: #5C4033; margin-top: 20px; }
-        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #5C4033; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: sans-serif; padding: 10px; }
+        .input-field { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .menu-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .action-btn { background-color: #CC8400; color: white; padding: 15px; width: 100%; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>NS PULP</h1>
-        <div class="tagline">MADE WITH 100% FRESH INGREDIENTS & LOVE</div>
-    </div>
-
-    <div class="container" id="menu-screen">
-        
-        <h2 class="category-title">Fruit Juices</h2>
+    <div id="menu-screen">
         <div id="fruit-juices-container"></div>
-
-        <h2 class="category-title">Vegetable Juices</h2>
         <div id="veg-juices-container"></div>
-
-        <h2 class="category-title">Natural Shakes</h2>
         <div id="shakes-container"></div>
-
-        <h2 class="category-title">Snacks</h2>
         <div id="snacks-container"></div>
 
-        <div class="cart-section">
-            <h2 style="margin-top:0; color:#5C4033;">🛒 Your Order</h2>
-            <div id="cart-items">No items selected yet.</div>
-            <div class="total-bill" id="total-bill">Total Amount: 0</div>
-            
-            <input type="text" id="customerName" class="input-field" placeholder="Enter Your Name / Table No.">
-            
-            <button id="checkout-btn" class="action-btn btn-checkout" onclick="showPayment()">Proceed to Pay</button>
-            
-            <div id="upi-box" class="upi-box">
-                <h3 style="margin: 0 0 10px 0; color: #2e7d32;">Scan & Pay / UPI App</h3>
-                <p><b>UPI ID:</b> nspulp@ybl</p>
-                <button class="action-btn" style="background-color: #673AB7; margin-bottom: 10px;" onclick="openUPI()">📱 Open PhonePe / GPay</button>
-                <input type="text" id="utrNumber" class="input-field" placeholder="Enter 12-digit UTR / Txn ID">
-                
-                <button id="order-btn" class="action-btn btn-order" style="display:block;" onclick="placeCloudOrder()">✅ Confirm & Place Order</button>
-            </div>
+        <div id="cart-section" style="margin-top:20px; border-top: 2px solid #333; padding-top:10px;">
+            <h3>🛒 Order Details</h3>
+            <div id="cart-items">No items selected.</div>
+            <p><b>Total: <span id="total-bill">0</span></b></p>
+            <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
+            <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (e.g. No Ice, Extra Salt)">
+            <input type="text" id="utrNumber" class="input-field" placeholder="UTR / Txn ID">
+            <button class="action-btn" onclick="placeCloudOrder()">✅ Confirm Order</button>
         </div>
     </div>
 
-    <div class="container" id="live-tracker">
-        <h2 style="color: #5C4033;">Order Placed Successfully!</h2>
-        <p>Your VIP Token Number is:</p>
-        
-        <div class="token-box" id="display-token">#--</div>
-        
-        <div class="loader" id="status-loader"></div>
-        <div class="status-text" id="display-status">Waiting for Cafe to Accept...</div>
-        
-        <p style="color: #777; margin-top: 30px;">Please do not refresh this page. Status will update live.</p>
+    <div id="live-tracker" style="display:none; text-align:center; padding:50px;">
+        <h2>Token: <span id="display-token">#--</span></h2>
+        <h3 id="display-status">Order Accepted! Preparing...</h3>
     </div>
 
     <script>
-        // ==========================================
-        // AAPKI FIREBASE MASTER CHABI
         const firebaseConfig = {
             apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
             authDomain: "nsjuice-07.firebaseapp.com",
@@ -113,197 +48,37 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        // ==========================================
 
-        // --- MENU DATA ---
-        const fruitJuices = [
-            { name: "Mousambi Juice", s: 40, m: 50, l: 60 }, { name: "Orange Juice", s: 40, m: 50, l: 60 },
-            { name: "Mix Fruit Juice", s: 40, m: 50, l: 60 }, { name: "Pineapple Juice", s: 40, m: 50, l: 60 },
-            { name: "Watermelon Juice", s: 40, m: 50, l: 60 }, { name: "Sweet Lime Juice", s: 40, m: 50, l: 60 },
-            { name: "Ash Gourd (Petha)", s: 30, m: 40, l: 50 }
-        ];
-        const vegJuices = [
-            { name: "Mix Vegetable Juice", s: 40, m: 50, l: 60 }, { name: "Gajar (Carrot) Juice", s: 30, m: 40, l: 50 },
-            { name: "ABC Juice", s: 40, m: 50, l: 60 }, { name: "Chukandar (Beetroot)", s: 50, m: 60, l: 70 }
-        ];
-        const shakes = [
-            { name: "Banana", s: 40, m: 50, l: 60 }, { name: "Banana Chocolate", s: 50, m: 60, l: 70 },
-            { name: "Banana Peanut", s: 50, m: 60, l: 70 }, { name: "Mango", s: 40, m: 50, l: 60 },
-            { name: "Mango Butter Scotch", s: 50, m: 60, l: 70 }, { name: "Papaya", s: 40, m: 50, l: 60 },
-            { name: "Mix Fruit Shake", s: 40, m: 50, l: 60 }, { name: "Cheeku", s: 40, m: 50, l: 60 },
-            { name: "Coconut Shake", s: 40, m: 50, l: 60 }, { name: "Fruit Cream Shake", s: 50, m: 60, l: 70 },
-            { name: "Apple", s: 40, m: 50, l: 60 }, { name: "Khajur Shake", s: 50, m: 60, l: 70 },
-            { name: "Khajur Peanut", s: 60, m: 70, l: 80 }, { name: "Khajur Banana Peanut", s: 60, m: 70, l: 80 },
-            { name: "Chocolate Shake", s: 40, m: 50, l: 60 }, { name: "Oreo Shake", s: 40, m: 50, l: 60 },
-            { name: "Kit-Kat Shake", s: 50, m: 60, l: 70 }, { name: "Cold Coffee", s: 40, m: 50, l: 60 },
-            { name: "Vanilla", s: 50, m: 60, l: 70 }, { name: "Strawberry Shake", s: 40, m: 50, l: 60 },
-            { name: "Dry Fruit Milk", s: 60, m: 70, l: 80 }, { name: "Protein Shake", s: 60, m: 70, l: 80 },
-            { name: "Butterscotch Milk", s: 50, m: 60, l: 70 }, { name: "Black Currant Milk", s: 50, m: 60, l: 70 }
-        ];
-        const snacks = [
-            { name: "Chai", price: 20 }, { name: "Hot Coffee", price: 30 },
-            { name: "Patties (Aloo)", price: 15 }, { name: "Patties (Paneer)", price: 20 },
-            { name: "Veg Grill Sandwich", price: 50 }, { name: "Healthy Sandwich", price: 60 },
-            { name: "Bun Maska", price: 30 }, { name: "Hot Chocolate", price: 40 }
-        ];
-
-        // --- RENDER MENU ---
-        function renderSML(items, containerId) {
-            let html = "";
-            items.forEach(item => {
-                html += `<div class="menu-item"><span class="item-name">${item.name}</span><div class="price-group">
-                <button class="btn-price" onclick="add('${item.name} (S)', ${item.s})">S:${item.s}</button>
-                <button class="btn-price" onclick="add('${item.name} (M)', ${item.m})">M:${item.m}</button>
-                <button class="btn-price" onclick="add('${item.name} (L)', ${item.l})">L:${item.l}</button></div></div>`;
-            });
-            document.getElementById(containerId).innerHTML = html;
-        }
-        function renderSnacks(items, containerId) {
-            let html = "";
-            items.forEach(item => {
-                html += `<div class="menu-item"><span class="item-name">${item.name}</span><div class="price-group">
-                <button class="btn-price" onclick="add('${item.name}', ${item.price})">Add: ${item.price}</button></div></div>`;
-            });
-            document.getElementById(containerId).innerHTML = html;
-        }
-        renderSML(fruitJuices, 'fruit-juices-container');
-        renderSML(vegJuices, 'veg-juices-container');
-        renderSML(shakes, 'shakes-container');
-        renderSnacks(snacks, 'snacks-container');
-
-        // --- CART LOGIC ---
         let cart = [];
         let total = 0;
 
-        function add(itemName, itemPrice) {
-            cart.push({ name: itemName, price: itemPrice });
-            total += itemPrice;
-            updateCart();
-        }
-
-        function remove(index) {
-            total -= cart[index].price;
-            cart.splice(index, 1);
-            updateCart();
-            if (cart.length === 0) {
-                document.getElementById('checkout-btn').style.display = 'block';
-                document.getElementById('upi-box').style.display = 'none';
-            }
-        }
-
+        function add(name, price) { cart.push({name, price}); total += price; updateCart(); }
         function updateCart() {
-            let cartDiv = document.getElementById('cart-items');
-            if (cart.length === 0) {
-                cartDiv.innerHTML = "No items selected yet.";
-            } else {
-                cartDiv.innerHTML = cart.map((item, index) => 
-                    `<div class="cart-item-row">
-                        <span>✔️ ${item.name}</span>
-                        <span><span style="color:#CC8400; font-weight:bold;">${item.price}</span>
-                        <button class="remove-btn" onclick="remove(${index})">❌</button></span>
-                    </div>`
-                ).join("");
-            }
-            document.getElementById('total-bill').innerHTML = "Total Amount: " + total;
+            document.getElementById('cart-items').innerHTML = cart.map(i => `<div>${i.name} - ${i.price}</div>`).join('');
+            document.getElementById('total-bill').innerText = total;
         }
 
-        function showPayment() {
-            let name = document.getElementById('customerName').value;
-            if (!name) { alert("Please enter your Name or Table Number first!"); return; }
-            if (cart.length === 0) { alert("Please add some items to your cart!"); return; }
-            
-            document.getElementById('checkout-btn').style.display = 'none';
-            document.getElementById('upi-box').style.display = 'block';
-        }
-
-        function openUPI() {
-            let upiId = "nspulp@ybl"; // Yahan apni UPI ID verify kar lena
-            window.location.href = `upi://pay?pa=${upiId}&pn=NS%20PULP&am=${total}&cu=INR`;
-        }
-
-        // --- CLOUD ORDER (FIREBASE) ---
         function placeCloudOrder() {
-    let name = document.getElementById('customerName').value;
-    let remarks = document.getElementById('orderRemarks').value;
-    let utr = document.getElementById('utrNumber').value;
+            let name = document.getElementById('customerName').value;
+            let remarks = document.getElementById('orderRemarks').value;
+            let utr = document.getElementById('utrNumber').value;
 
-    // Auto-increment Token Logic
-    db.ref('order_counter').transaction((current) => {
-        return (current || 0) + 1;
-    }, (error, committed, snapshot) => {
-        if (committed) {
-            let tokenNo = snapshot.val();
-            let newOrderRef = db.ref('live_orders').push();
+            if(!name) { alert("Name enter karein!"); return; }
 
-            newOrderRef.set({
-                token: tokenNo,
-                customer: name,
-                remarks: remarks, // Ye Note save karega
-                items: cart,
-                totalAmount: total,
-                utr: utr,
-                status: "Accepted", // Auto-accept ho gaya
-                timestamp: Date.now()
-            });
+            db.ref('order_counter').transaction((current) => (current || 0) + 1, (error, committed, snapshot) => {
+                if (committed) {
+                    let tokenNo = snapshot.val();
+                    let newOrderRef = db.ref('live_orders').push();
+                    newOrderRef.set({ token: tokenNo, customer: name, remarks: remarks, items: cart, totalAmount: total, utr: utr, status: "Accepted" });
 
-            document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('live-tracker').style.display = 'block';
-            document.getElementById('display-token').innerText = "#" + tokenNo;
-        }
-    });
-}
-
-            // Save to Database
-            newOrderRef.set({
-                token: tokenNo,
-                customer: name,
-                items: cart,
-                totalAmount: total,
-                utr: utr,
-                status: "Pending",
-                timestamp: Date.now()
-            });
-
-            // Switch to Live Tracker Screen
-            document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('live-tracker').style.display = 'block';
-            document.getElementById('display-token').innerText = "#" + tokenNo;
-
-            // Listen for Shop Updates
-            // Listen for Shop Updates
-            db.ref('live_orders').on('value', (snapshot) => {
-                let allOrders = snapshot.val();
-                let myToken = tokenNo;
-                let pendingCount = 0;
-
-                // Line mein kitne log hain wo ginte hain
-                if (allOrders) {
-                    Object.values(allOrders).forEach(order => {
-                        // Agar status 'Ready' nahi hai aur token mujhse chota hai
-                        if (order.status !== 'Ready' && order.token < myToken) {
-                            pendingCount++;
-                        }
-                    });
+                    document.getElementById('menu-screen').style.display = 'none';
+                    document.getElementById('live-tracker').style.display = 'block';
+                    document.getElementById('display-token').innerText = "#" + tokenNo;
                 }
-
-                // Status Update
-                let statusTextDiv = document.getElementById('display-status');
-                db.ref('live_orders/' + orderId + '/status').once('value').then((snapshot) => {
-                    let currentStatus = snapshot.val();
-                    
-                    if(currentStatus === "Pending") {
-                        statusTextDiv.innerText = `Line mein aapka number hai: #${pendingCount + 1}. Please wait...`;
-                    } 
-                    else if(currentStatus === "Accepted") {
-                        statusTextDiv.innerText = `👨‍🍳 Aapka order ban raha hai! (Queue mein aap se pehle: ${pendingCount} log)`;
-                    } 
-                    else if(currentStatus === "Ready") {
-                        statusTextDiv.innerText = "✅ Order is READY! Please collect from counter.";
-                        document.getElementById('status-loader').style.display = "none";
-                    }
-                });
             });
         }
+        
+        // Menu Render Logic (Apne purane code se yahan add kar lein)
     </script>
 </body>
 </html>
