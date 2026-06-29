@@ -7,91 +7,220 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #fff; }
-        .header { background: #5C4033; color: #fff; padding: 15px; text-align: center; }
-        .cat-title { background: #CC8400; color: white; padding: 10px; margin-top: 10px; }
-        .item-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-        .btn-size { background: #5C4033; color: white; padding: 5px 10px; border: none; border-radius: 4px; margin: 2px; font-size: 12px; }
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; }
-        .modal-content { background:#fff; padding:20px; border-radius:10px; width:80%; }
-        .btn-confirm { background:#25D366; color:white; padding:15px; width:100%; border:none; margin-top:20px; font-weight:bold; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f8f9fa; color: #333; }
+        .header { background: #CC8400; color: #fff; padding: 20px; text-align: center; font-size: 1.5em; font-weight: bold; }
+        .category-title { background: #5C4033; color: white; padding: 10px; margin: 15px 10px 5px 10px; border-radius: 5px; font-weight: bold; text-transform: uppercase; }
+        .item-row { display: flex; justify-content: space-between; padding: 15px; margin: 0 10px; border-bottom: 1px solid #ddd; background: white; align-items: center; }
+        .btn-size { background: #CC8400; color: white; padding: 8px 12px; border: none; border-radius: 4px; margin: 2px; font-weight: bold; cursor: pointer; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index: 1000; }
+        .modal-content { background:#fff; padding:20px; border-radius:10px; width:85%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-confirm { background:#25D366; color:white; padding:15px; width:100%; border:none; border-radius: 8px; margin-top:15px; font-weight:bold; font-size: 1.1em; cursor: pointer; }
+        .cart-item { padding: 10px; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between; align-items: center;}
     </style>
 </head>
 <body>
 
-    <div class="header"><h1>NS PULP</h1></div>
+    <div class="header">NS PULP - ORDER NOW</div>
 
     <!-- Menu Area -->
     <div id="menu-area"></div>
 
-    <div style="padding:20px;">
-        <h3>🛒 Cart</h3>
-        <div id="cart-items"></div>
-        <input type="text" id="custName" placeholder="Enter Name/Table" style="width:100%; padding:10px; margin:10px 0;">
-        <button class="btn-confirm" onclick="placeOrder()">CONFIRM ORDER</button>
+    <div style="padding:20px; background: white; margin-top: 20px;">
+        <h3 style="color: #5C4033; border-bottom: 2px solid #CC8400; padding-bottom: 5px;">🛒 Your Order</h3>
+        <div id="cart-items" style="margin-bottom: 15px;">No items selected yet.</div>
+        <h3 style="text-align: right; color: #CC8400;">Total: ₹<span id="cart-total">0</span></h3>
+        <input type="text" id="custName" placeholder="Enter Name / Table No." style="width:100%; padding:12px; margin:10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+        <button class="btn-confirm" onclick="placeOrder()">CONFIRM & PLACE ORDER</button>
     </div>
 
     <!-- Modal for Remarks -->
     <div class="modal" id="prefModal">
         <div class="modal-content">
-            <h3 id="modalTitle"></h3>
-            <label>Ice: <select id="prefIce"><option>Yes</option><option>No</option></select></label><br><br>
-            <label>Add-ons: <select id="prefExtra"><option>Normal</option><option>Extra Salt</option><option>Less Sugar</option></select></label><br><br>
-            <button class="btn-confirm" onclick="saveItem()">Add to Cart</button>
+            <h3 id="modalTitle" style="color: #5C4033; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></h3>
+            
+            <div style="margin: 15px 0;">
+                <label style="font-weight: bold;">Ice Preference:</label><br>
+                <select id="prefIce" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="Regular Ice">Regular Ice</option>
+                    <option value="No Ice">No Ice</option>
+                    <option value="Extra Ice">Extra Ice</option>
+                </select>
+            </div>
+            
+            <div style="margin: 15px 0;">
+                <label style="font-weight: bold;">Add-ons / Sugar / Salt:</label><br>
+                <select id="prefExtra" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="Regular">Regular</option>
+                    <option value="No Sugar">No Sugar</option>
+                    <option value="Less Sugar">Less Sugar</option>
+                    <option value="No Salt">No Salt</option>
+                    <option value="Extra Salt">Extra Salt</option>
+                    <option value="Add Ice Cream">Add Ice Cream</option>
+                </select>
+            </div>
+            
+            <button class="btn-size" style="width: 100%; padding: 15px; font-size: 1.1em; background: #5C4033;" onclick="saveItem()">Add to Order</button>
+            <button onclick="closeModal()" style="width: 100%; padding: 10px; margin-top: 10px; background: transparent; border: none; color: #888; font-weight: bold;">Cancel</button>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = { /* APNI KEY YAHAN DALEIN */ };
+        // AAPKI ORIGINAL FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
+            authDomain: "nsjuice-07.firebaseapp.com",
+            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
+            projectId: "nsjuice-07",
+            storageBucket: "nsjuice-07.firebasestorage.app",
+            messagingSenderId: "741674109700",
+            appId: "1:741674109700:web:0ea165b3567f829c805e51"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // FULL DATA WITH S, M, L
+        // FULL DATA WITH CATEGORIES
         const menu = [
+            // FRUIT JUICES
             { cat: "Fruit Juices", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
             { cat: "Fruit Juices", name: "Orange Juice", s: 40, m: 50, l: 60 },
+            { cat: "Fruit Juices", name: "Mix Fruit Juice", s: 40, m: 50, l: 60 },
+            { cat: "Fruit Juices", name: "Pineapple Juice", s: 40, m: 50, l: 60 },
+            { cat: "Fruit Juices", name: "Watermelon Juice", s: 40, m: 50, l: 60 },
+            { cat: "Fruit Juices", name: "Sweet Lime Juice", s: 40, m: 50, l: 60 },
+            { cat: "Fruit Juices", name: "Ash Gourd (Petha)", s: 30, m: 40, l: 50 },
+            
+            // VEGETABLE JUICES
+            { cat: "Vegetable Juices", name: "Mix Vegetable", s: 40, m: 50, l: 60 },
+            { cat: "Vegetable Juices", name: "Carrot Juice", s: 30, m: 40, l: 50 },
+            { cat: "Vegetable Juices", name: "ABC Juice", s: 40, m: 50, l: 60 },
+            { cat: "Vegetable Juices", name: "Beetroot Juice", s: 50, m: 60, l: 70 },
+
+            // SHAKES
             { cat: "Natural Shakes", name: "Mango Shake", s: 40, m: 50, l: 60 },
+            { cat: "Natural Shakes", name: "Banana Shake", s: 40, m: 50, l: 60 },
             { cat: "Natural Shakes", name: "Chocolate Shake", s: 40, m: 50, l: 60 },
-            { cat: "Snacks", name: "Veg Sandwich", s: 50, m: 0, l: 0 } // Snacks ke liye S/M/L ki zarurat nahi
+            { cat: "Natural Shakes", name: "Cold Coffee", s: 40, m: 50, l: 60 },
+            { cat: "Natural Shakes", name: "Kit-Kat Shake", s: 50, m: 60, l: 70 },
+            
+            // SNACKS (No S/M/L, just single price)
+            { cat: "Snacks Menu", name: "Chai", price: 20 },
+            { cat: "Snacks Menu", name: "Hot Coffee", price: 30 },
+            { cat: "Snacks Menu", name: "Patties (Aloo)", price: 15 },
+            { cat: "Snacks Menu", name: "Veg Grill Sandwich", price: 50 },
+            { cat: "Snacks Menu", name: "Bun Maska", price: 30 }
         ];
 
         let cart = [];
+        let total = 0;
         let currentItem = {};
 
-        // Render Menu
+        // Render Menu logic
         const area = document.getElementById('menu-area');
+        let currentCategory = "";
+        
         menu.forEach(i => {
+            if(currentCategory !== i.cat) {
+                area.innerHTML += `<div class="category-title">${i.cat}</div>`;
+                currentCategory = i.cat;
+            }
+            
+            let buttonsHTML = "";
+            if(i.price) {
+                // Single price item
+                buttonsHTML = `<button class="btn-size" onclick="openModal('${i.name}', ${i.price})">₹${i.price}</button>`;
+            } else {
+                // S, M, L items
+                if(i.s) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S: ₹${i.s}</button>`;
+                if(i.m) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M: ₹${i.m}</button>`;
+                if(i.l) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L: ₹${i.l}</button>`;
+            }
+
             area.innerHTML += `
                 <div class="item-row">
-                    <span>${i.name}</span>
-                    <span>
-                        ${i.s ? `<button class="btn-size" onclick="openModal('${i.name} S', ${i.s})">S:${i.s}</button>` : ''}
-                        ${i.m ? `<button class="btn-size" onclick="openModal('${i.name} M', ${i.m})">M:${i.m}</button>` : ''}
-                        ${i.l ? `<button class="btn-size" onclick="openModal('${i.name} L', ${i.l})">L:${i.l}</button>` : ''}
-                    </span>
+                    <span style="font-weight: 500; font-size: 1.05em; color: #444;">${i.name}</span>
+                    <span>${buttonsHTML}</span>
                 </div>`;
         });
 
         function openModal(name, price) {
             currentItem = {name, price};
-            document.getElementById('modalTitle').innerText = name;
+            document.getElementById('modalTitle').innerText = name + " - ₹" + price;
             document.getElementById('prefModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('prefModal').style.display = 'none';
         }
 
         function saveItem() {
             let ice = document.getElementById('prefIce').value;
             let extra = document.getElementById('prefExtra').value;
-            cart.push({...currentItem, ice, extra});
-            document.getElementById('prefModal').style.display = 'none';
-            document.getElementById('cart-items').innerHTML += `<div>${currentItem.name} (${ice}, ${extra})</div>`;
+            let remarkString = [];
+            
+            if(ice !== "Regular Ice") remarkString.push(ice);
+            if(extra !== "Regular") remarkString.push(extra);
+            
+            let finalRemark = remarkString.length > 0 ? "(" + remarkString.join(", ") + ")" : "";
+            
+            cart.push({name: currentItem.name, price: currentItem.price, remark: finalRemark});
+            total += currentItem.price;
+            
+            updateCartDisplay();
+            closeModal();
+            
+            // Reset modal dropdowns for next item
+            document.getElementById('prefIce').value = "Regular Ice";
+            document.getElementById('prefExtra').value = "Regular";
+        }
+        
+        function removeItem(index) {
+            total -= cart[index].price;
+            cart.splice(index, 1);
+            updateCartDisplay();
+        }
+        
+        function updateCartDisplay() {
+            let cartDiv = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                cartDiv.innerHTML = "No items selected yet.";
+            } else {
+                cartDiv.innerHTML = cart.map((item, index) => 
+                    `<div class="cart-item">
+                        <div><strong>${item.name}</strong> <br><span style="font-size:0.85em; color:#CC8400; font-weight:bold;">${item.remark}</span></div>
+                        <div>₹${item.price} <button onclick="removeItem(${index})" style="background:#ff4d4d; color:white; border:none; border-radius:3px; padding:5px 8px; margin-left:10px; cursor:pointer;">X</button></div>
+                    </div>`
+                ).join('');
+            }
+            document.getElementById('cart-total').innerText = total;
         }
 
         function placeOrder() {
             let name = document.getElementById('custName').value;
+            if(!name || cart.length === 0) { alert("Please enter your name and add items to the cart!"); return; }
+            
+            // Join all item remarks into one string so Admin can easily read it
+            let combinedRemarks = cart.filter(i => i.remark).map(i => i.name + ": " + i.remark).join(" | ");
+            
             db.ref('order_counter').transaction(c => (c || 0) + 1, (err, comm, snap) => {
                 if(comm) {
-                    db.ref('live_orders').push({ token: snap.val(), customer: name, items: cart, status: "Pending" });
-                    document.body.innerHTML = `<h1>Token: #${snap.val()}</h1>`;
+                    db.ref('live_orders').push({ 
+                        token: snap.val(), 
+                        customer: name, 
+                        items: cart, 
+                        totalAmount: total,
+                        remarks: combinedRemarks, 
+                        status: "Pending" 
+                    });
+                    
+                    // Show Professional Token Screen
+                    document.body.innerHTML = `
+                        <div style="text-align:center; padding:60px 20px; font-family: 'Segoe UI', sans-serif;">
+                            <h2 style="color: #25D366; font-size: 2em; margin-bottom: 0;">Order Confirmed!</h2>
+                            <p style="color: #666; font-size: 1.1em;">Your Token Number is</p>
+                            <h1 style="font-size: 5em; color: #CC8400; margin: 10px 0; border: 3px dashed #CC8400; display: inline-block; padding: 20px 40px; border-radius: 15px;">#${snap.val()}</h1>
+                            <p style="font-size: 1.2em; color: #5C4033; font-weight: bold; margin-top: 30px;">👨‍🍳 We are preparing your order...</p>
+                            <p style="color: #888; font-size: 0.9em;">Please check the live status on the counter display.</p>
+                        </div>`;
                 }
             });
         }
