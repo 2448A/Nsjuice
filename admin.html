@@ -3,45 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS PULP | Admin Dashboard</title>
+    <title>NS PULP | Centralized Admin Dashboard</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        body { background-color: #1a1a1a; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #fff; }
+        body { background-color: #1a1a1a; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #fff; display: flex; flex-direction: column; height: 100vh; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #CC8400; padding-bottom: 10px; margin-bottom: 20px; }
-        h1 { color: #CC8400; margin: 0; }
+        h1 { color: #CC8400; margin: 0; font-size: 2.2em; }
         
-        .order-card { background-color: #333; border-left: 5px solid #CC8400; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        .order-header { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
-        .token { color: #CC8400; font-size: 1.5em; }
+        .main-container { display: flex; gap: 20px; flex-grow: 1; }
+        .status-column { flex: 1; background-color: #2a2a2a; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; }
+        .status-header { text-align: center; font-size: 1.5em; font-weight: bold; border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 15px; }
+        .orders-list { flex-grow: 1; overflow-y: auto; }
+        
+        /* Specific column colors */
+        #column-pending .status-header { color: #ff9800; border-color: #ff9800; }
+        #column-preparing .status-header { color: #CC8400; border-color: #CC8400; }
+        #column-ready .status-header { color: #25D366; border-color: #25D366; }
+        
+        .order-card { background-color: #333; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .order-card .token-header { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
+        .order-card .token-no { color: #CC8400; font-size: 1.5em; }
         
         .items-list { font-size: 1.1em; line-height: 1.6; color: #ddd; }
+        .item-row { display: flex; justify-content: space-between; }
         .total { font-size: 1.2em; font-weight: bold; color: #4caf50; margin-top: 10px; }
-        .utr-text { font-size: 0.9em; color: #aaa; margin-top: 5px; }
+        
+        .note { color: #ff9800; font-weight: bold; margin-top: 5px; font-size: 0.9em; }
         
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1em; flex: 1; }
-        .btn-accept { background-color: #CC8400; color: #fff; }
+        .btn { padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1em; flex: 1; }
+        .btn-pending { background-color: #ff9800; color: #fff; }
+        .btn-preparing { background-color: #CC8400; color: #fff; }
         .btn-ready { background-color: #25D366; color: #fff; }
-        
-        .status-badge { background-color: #555; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>NS PULP - Live Orders</h1>
+        <h1>NS PULP - Live Control Center</h1>
         <div id="connection-status" style="color: #25D366;">🟢 Live</div>
     </div>
 
-    <div id="orders-container">
-        <h2>Loading orders...</h2>
+    <div class="main-container">
+        
+        <div class="status-column" id="column-pending">
+            <div class="status-header">Pending Orders</div>
+            <div class="orders-list" id="pending-orders"></div>
+        </div>
+
+        <div class="status-column" id="column-preparing">
+            <div class="status-header">In Preparation</div>
+            <div class="orders-list" id="preparing-orders"></div>
+        </div>
+
+        <div class="status-column" id="column-ready">
+            <div class="status-header">Ready for Collection</div>
+            <div class="orders-list" id="ready-orders"></div>
+        </div>
+
     </div>
 
     <script>
-        // AAPKI FIREBASE MASTER CHABI
+        // FIREBASE CONF (Aapki Master Chabi)
         const firebaseConfig = {
             apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
             authDomain: "nsjuice-07.firebaseapp.com",
@@ -54,73 +80,52 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 🔊 Sound Notification ke liye
-        function playBeep() {
-            let audio = new Audio('https://www.soundjay.com/buttons/sounds/button-14.mp3');
-            audio.play().catch(e => console.log("Sound blocked by browser"));
-        }
-
-        // Live Orders Sun-na (Listening)
+        // Orders ko Columns mein split karne ka logic
         db.ref('live_orders').on('value', (snapshot) => {
-            let ordersDiv = document.getElementById('orders-container');
-            ordersDiv.innerHTML = ""; 
+            const orders = snapshot.val();
             
-            let orders = snapshot.val();
-            let orderCount = 0;
-
+            // Sabse pehle teeno lists ko khali karein
+            document.getElementById('pending-orders').innerHTML = '';
+            document.getElementById('preparing-orders').innerHTML = '';
+            document.getElementById('ready-orders').innerHTML = '';
+            
             if (orders) {
-                // Naye orders upar dikhane ke liye reverse karna
-                let orderKeys = Object.keys(orders).reverse();
-                
-                orderKeys.forEach(key => {
-                    let order = orders[key];
+                // Latest orders ko upar laane ke liye reverse karein
+                Object.keys(orders).reverse().forEach(key => {
+                    const order = orders[key];
+                    const targetListId = order.status.toLowerCase() + '-orders';
                     
-                    // Sirf Pending aur Accepted orders dikhao (Ready wale hat jayenge)
-                    if(order.status !== "Ready") {
-                        orderCount++;
-                        
-                        let itemsHTML = order.items.map(item => `▫️ ${item.name} (${item.price})`).join("<br>");
-                        
-                        let html = `
+                    // Naya order card HTML
+                    const itemsHTML = order.items.map(item => `
+                        <div class="item-row">
+                            <span>▫️ ${item.name}</span>
+                            <span style="color:#CC8400; font-weight:bold;">${item.price}</span>
+                        </div>`).join("");
+                    
+                    const cardHTML = `
                         <div class="order-card">
-                            <div class="order-header">
-                                <span class="token">Token #${order.token}</span>
-                                <span class="status-badge">${order.status}</span>
+                            <div class="token-header">
+                                <span class="token-no">Token #${order.token}</span>
+                                <span>${order.customer}</span>
                             </div>
-                            <div><b>Customer:</b> ${order.customer}</div>
-                            <div class="items-list" style="margin-top:10px;">${itemsHTML}</div>
+                            <div class="items-list">${itemsHTML}</div>
                             <div class="total">Total: ${order.totalAmount}</div>
-                            <div class="utr-text">UTR/Txn: ${order.utr || 'N/A'}</div>
-<div class="items-list" style="margin-top:10px;">${itemsHTML}</div>
-// IS LINE KE THEEK NICHE YE WALI LINE ADD KAREIN:
-<div style="color: #ff9800; margin-top:5px; font-weight:bold;">Note: ${order.remarks || 'None'}</div>
-<div class="total">Total: ${order.totalAmount}</div>
-
                             
+                            <div class="note">Note: ${order.remarks || 'None'}</div>
                             
                             <div class="btn-group">
-                                ${order.status === 'Pending' ? `<button class="btn btn-accept" onclick="updateStatus('${key}', 'Accepted')">👨‍🍳 Accept (Preparing)</button>` : ''}
-                                ${order.status === 'Accepted' ? `<button class="btn btn-ready" onclick="updateStatus('${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
+                                ${order.status === 'Pending' ? `<button class="btn btn-preparing" onclick="updateStatus('${key}', 'Preparing')">👨‍🍳 Accept & Prepare</button>` : ''}
+                                ${order.status === 'Preparing' ? `<button class="btn btn-ready" onclick="updateStatus('${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
+                                ${order.status === 'Ready' ? `<p style="text-align:center; color:#777; width:100%;">Wait for customer to collect</p>` : ''}
                             </div>
                         </div>`;
-                        
-                        ordersDiv.innerHTML += html;
-                    }<div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
-    <h3>Token #${order.token} - ${order.customer}</h3>
-    <div>Items: ${order.items.map(i => i.name).join(', ')}</div>
-    <div style="color: #CC8400; font-weight: bold; margin: 5px 0;">Note: ${order.remarks || 'None'}</div>
-    <div style="font-weight: bold;">Total: ${order.totalAmount}</div>
-    <button onclick="updateStatus('${key}', 'Ready')">✅ Ready</button>
-</div>
+                    
+                    document.getElementById(targetListId).innerHTML += cardHTML;
                 });
-            }
-
-            if(orderCount === 0) {
-                ordersDiv.innerHTML = "<h3 style='color:#777; text-align:center;'>No active orders right now.</h3>";
             }
         });
 
-        // Status Update Function
+        // Status Update function
         function updateStatus(orderId, newStatus) {
             db.ref('live_orders/' + orderId).update({
                 status: newStatus
