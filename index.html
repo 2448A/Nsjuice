@@ -223,13 +223,35 @@
 
         // --- CLOUD ORDER (FIREBASE) ---
         function placeCloudOrder() {
-            let name = document.getElementById('customerName').value;
-            let utr = document.getElementById('utrNumber').value;
-            
-            // Generate Random Token
-            let tokenNo = Math.floor(Math.random() * 900) + 100; 
+    let name = document.getElementById('customerName').value;
+    let remarks = document.getElementById('orderRemarks').value;
+    let utr = document.getElementById('utrNumber').value;
+
+    // Auto-increment Token Logic
+    db.ref('order_counter').transaction((current) => {
+        return (current || 0) + 1;
+    }, (error, committed, snapshot) => {
+        if (committed) {
+            let tokenNo = snapshot.val();
             let newOrderRef = db.ref('live_orders').push();
-            let orderId = newOrderRef.key;
+
+            newOrderRef.set({
+                token: tokenNo,
+                customer: name,
+                remarks: remarks, // Ye Note save karega
+                items: cart,
+                totalAmount: total,
+                utr: utr,
+                status: "Accepted", // Auto-accept ho gaya
+                timestamp: Date.now()
+            });
+
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('live-tracker').style.display = 'block';
+            document.getElementById('display-token').innerText = "#" + tokenNo;
+        }
+    });
+}
 
             // Save to Database
             newOrderRef.set({
