@@ -105,7 +105,13 @@
                         </div>`;
                         
                         ordersDiv.innerHTML += html;
-                    }
+                    }<div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
+    <h3>Token #${order.token} - ${order.customer}</h3>
+    <div>Items: ${order.items.map(i => i.name).join(', ')}</div>
+    <div style="color: #CC8400; font-weight: bold; margin: 5px 0;">Note: ${order.remarks || 'None'}</div>
+    <div style="font-weight: bold;">Total: ${order.totalAmount}</div>
+    <button onclick="updateStatus('${key}', 'Ready')">✅ Ready</button>
+</div>
                 });
             }
 
