@@ -91,6 +91,12 @@
                             <div class="items-list" style="margin-top:10px;">${itemsHTML}</div>
                             <div class="total">Total: ${order.totalAmount}</div>
                             <div class="utr-text">UTR/Txn: ${order.utr || 'N/A'}</div>
+<div class="items-list" style="margin-top:10px;">${itemsHTML}</div>
+// IS LINE KE THEEK NICHE YE WALI LINE ADD KAREIN:
+<div style="color: #ff9800; margin-top:5px; font-weight:bold;">Note: ${order.remarks || 'None'}</div>
+<div class="total">Total: ${order.totalAmount}</div>
+
+                            
                             
                             <div class="btn-group">
                                 ${order.status === 'Pending' ? `<button class="btn btn-accept" onclick="updateStatus('${key}', 'Accepted')">👨‍🍳 Accept (Preparing)</button>` : ''}
