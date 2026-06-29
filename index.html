@@ -2,75 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NS PULP | Order</title>
+    <title>NS PULP | Official Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; background: #fff; padding: 15px; }
-        .menu-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px dashed #ccc; }
-        .btn-add { background: #5C4033; color: white; border: none; padding: 5px 12px; border-radius: 4px; }
-        .input-field { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fff; padding: 20px; }
+        .menu-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #ccc; }
+        .btn-add { background: #5C4033; color: white; border: none; padding: 6px 15px; border-radius: 5px; cursor: pointer; }
+        .input-field { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
         .btn-confirm { background: #CC8400; color: white; padding: 15px; width: 100%; border: none; border-radius: 5px; font-weight: bold; }
-        #live-tracker { display: none; text-align: center; padding: 40px; }
+        #live-tracker { display: none; text-align: center; padding: 50px; }
     </style>
 </head>
 <body>
+    <h2>NS PULP MENU</h2>
+    <div id="menu-container"></div>
 
-    <div id="menu-screen">
-        <h2>NS PULP MENU</h2>
-        <div id="menu-container"></div>
-        
-        <div style="margin-top:20px; border-top:2px solid #CC8400; padding-top:10px;">
-            <h3>Cart: <span id="cart-list"></span> | Total: ₹<span id="total-bill">0</span></h3>
-            <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
-            <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (No Ice, Extra Sweet)">
-            <input type="text" id="utrNumber" class="input-field" placeholder="UTR/Txn ID">
-            <button class="btn-confirm" onclick="placeCloudOrder()">CONFIRM ORDER</button>
-        </div>
+    <div style="margin-top:30px; padding:20px; border: 2px solid #CC8400; border-radius: 10px;">
+        <h3>🛒 Your Order</h3>
+        <div id="cart-list">No items selected.</div>
+        <p><b>Total: ₹<span id="total-bill">0</span></b></p>
+        <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
+        <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (No Ice, Extra Salt, etc.)">
+        <input type="text" id="utrNumber" class="input-field" placeholder="UTR/Txn ID">
+        <button class="btn-confirm" onclick="placeCloudOrder()">CONFIRM ORDER</button>
     </div>
 
     <div id="live-tracker">
-        <h1>Order Confirmed!</h1>
-        <h2 style="font-size: 3em; color: #CC8400;">Token: <span id="display-token">#--</span></h2>
-        <p>👨‍🍳 Preparing your order...</p>
+        <h2 style="color: #CC8400;">Order Confirmed!</h2>
+        <h1 style="font-size: 4em;" id="display-token">#--</h1>
+        <p>Aapka order process ho raha hai...</p>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
-            authDomain: "nsjuice-07.firebaseapp.com",
-            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
-            projectId: "nsjuice-07",
-            storageBucket: "nsjuice-07.firebasestorage.app",
-            messagingSenderId: "741674109700",
-            appId: "1:741674109700:web:0ea165b3567f829c805e51"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU", authDomain: "nsjuice-07.firebaseapp.com", databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com", projectId: "nsjuice-07", storageBucket: "nsjuice-07.firebasestorage.app", messagingSenderId: "741674109700", appId: "1:741674109700:web:0ea165b3567f829c805e51" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const menu = [{name: "Mousambi Juice", price: 50}, {name: "Mango Shake", price: 60}, {name: "Cold Coffee", price: 50}];
+        const fullMenu = [{name: "Mousambi Juice", price: 50}, {name: "Orange Juice", price: 50}, {name: "Mango Shake", price: 60}, {name: "Cold Coffee", price: 50}, {name: "Veg Sandwich", price: 50}];
+        
         let container = document.getElementById('menu-container');
-        menu.forEach(item => {
+        fullMenu.forEach(item => {
             container.innerHTML += `<div class="menu-item">${item.name} (₹${item.price}) <button class="btn-add" onclick="add('${item.name}', ${item.price})">Add</button></div>`;
         });
 
         let cart = []; let total = 0;
-        function add(name, price) { cart.push({name, price}); total += price; document.getElementById('cart-list').innerText = cart.map(i=>i.name).join(', '); document.getElementById('total-bill').innerText = total; }
+        function add(n, p) { cart.push({name: n, price: p}); total += p; document.getElementById('total-bill').innerText = total; document.getElementById('cart-list').innerText = cart.map(i=>i.name).join(', '); }
 
         function placeCloudOrder() {
             let name = document.getElementById('customerName').value;
-            if(!name || cart.length === 0) { alert("Please add items & name!"); return; }
-
-            db.ref('order_counter').transaction((current) => (current || 0) + 1, (error, committed, snapshot) => {
-                if (committed) {
-                    let token = snapshot.val();
-                    db.ref('live_orders').push({
-                        token: token, customer: name, remarks: document.getElementById('orderRemarks').value,
-                        items: cart, totalAmount: total, utr: document.getElementById('utrNumber').value, status: "Accepted"
-                    });
-                    document.getElementById('menu-screen').style.display = 'none';
-                    document.getElementById('live-tracker').style.display = 'block';
-                    document.getElementById('display-token').innerText = "#" + token;
+            if(!name || cart.length === 0) { alert("Name & Items zaroori hain!"); return; }
+            db.ref('order_counter').transaction((c) => (c || 0) + 1, (e, comm, snap) => {
+                if (comm) {
+                    db.ref('live_orders').push({ token: snap.val(), customer: name, remarks: document.getElementById('orderRemarks').value, items: cart, totalAmount: total, utr: document.getElementById('utrNumber').value, status: "Accepted" });
+                    document.body.innerHTML = `<h1>Token: #${snap.val()}</h1><p>Order Placed!</p>`;
                 }
             });
         }
