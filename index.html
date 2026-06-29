@@ -2,38 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NS PULP | Live Menu</title>
+    <title>NS PULP | Official Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; }
-        .input-field { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .menu-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-        .action-btn { background-color: #CC8400; color: white; padding: 15px; width: 100%; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        body { font-family: sans-serif; background: #fff; padding: 10px; }
+        h2 { color: #CC8400; border-bottom: 2px solid #5C4033; }
+        .menu-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ccc; }
+        .btn-add { background: #5C4033; color: white; border: none; padding: 5px 10px; border-radius: 4px; }
+        .input-field { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .btn-confirm { background: #CC8400; color: white; padding: 15px; width: 100%; border: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="menu-screen">
-        <div id="fruit-juices-container"></div>
-        <div id="veg-juices-container"></div>
-        <div id="shakes-container"></div>
-        <div id="snacks-container"></div>
+    <h2>NS PULP MENU</h2>
+    <div id="menu-container"></div>
 
-        <div id="cart-section" style="margin-top:20px; border-top: 2px solid #333; padding-top:10px;">
-            <h3>🛒 Order Details</h3>
-            <div id="cart-items">No items selected.</div>
-            <p><b>Total: <span id="total-bill">0</span></b></p>
-            <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
-            <input type="text" id="orderRemarks" class="input-field" placeholder="Remarks (e.g. No Ice, Extra Salt)">
-            <input type="text" id="utrNumber" class="input-field" placeholder="UTR / Txn ID">
-            <button class="action-btn" onclick="placeCloudOrder()">✅ Confirm Order</button>
-        </div>
-    </div>
-
-    <div id="live-tracker" style="display:none; text-align:center; padding:50px;">
-        <h2>Token: <span id="display-token">#--</span></h2>
-        <h3 id="display-status">Order Accepted! Preparing...</h3>
+    <div style="margin-top:30px; border: 2px solid #CC8400; padding: 15px; border-radius: 10px;">
+        <h3>🛒 Order Details</h3>
+        <div id="cart-items">No items yet.</div>
+        <p><b>Total: <span id="total-bill">0</span></b></p>
+        <input type="text" id="customerName" class="input-field" placeholder="Name / Table No.">
+        <input type="text" id="orderRemarks" class="input-field" placeholder="Special Notes (e.g., No Ice, Extra Sugar)">
+        <input type="text" id="utrNumber" class="input-field" placeholder="UTR/Txn ID">
+        <button class="btn-confirm" onclick="placeCloudOrder()">CONFIRM & PLACE ORDER</button>
     </div>
 
     <script>
@@ -49,12 +42,25 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // FULL MENU DATA
+        const menu = [
+            { name: "Mousambi Juice", price: 50 }, { name: "Orange Juice", price: 50 },
+            { name: "Mix Fruit Juice", price: 50 }, { name: "Mango Shake", price: 60 },
+            { name: "Chocolate Shake", price: 60 }, { name: "Veg Grill Sandwich", price: 50 },
+            { name: "Bun Maska", price: 30 }, { name: "Cold Coffee", price: 50 }
+        ];
+
+        // Render Menu
+        let container = document.getElementById('menu-container');
+        menu.forEach(item => {
+            container.innerHTML += `<div class="menu-item">${item.name} (₹${item.price}) <button class="btn-add" onclick="add('${item.name}', ${item.price})">Add</button></div>`;
+        });
+
         let cart = [];
         let total = 0;
-
-        function add(name, price) { cart.push({name, price}); total += price; updateCart(); }
-        function updateCart() {
-            document.getElementById('cart-items').innerHTML = cart.map(i => `<div>${i.name} - ${i.price}</div>`).join('');
+        function add(name, price) { cart.push({name, price}); total += price; updateUI(); }
+        function updateUI() {
+            document.getElementById('cart-items').innerHTML = cart.map(i => i.name).join(', ');
             document.getElementById('total-bill').innerText = total;
         }
 
@@ -63,22 +69,24 @@
             let remarks = document.getElementById('orderRemarks').value;
             let utr = document.getElementById('utrNumber').value;
 
-            if(!name) { alert("Name enter karein!"); return; }
+            if(!name || cart.length === 0) { alert("Enter Name and Select Items!"); return; }
 
             db.ref('order_counter').transaction((current) => (current || 0) + 1, (error, committed, snapshot) => {
                 if (committed) {
-                    let tokenNo = snapshot.val();
-                    let newOrderRef = db.ref('live_orders').push();
-                    newOrderRef.set({ token: tokenNo, customer: name, remarks: remarks, items: cart, totalAmount: total, utr: utr, status: "Accepted" });
-
-                    document.getElementById('menu-screen').style.display = 'none';
-                    document.getElementById('live-tracker').style.display = 'block';
-                    document.getElementById('display-token').innerText = "#" + tokenNo;
+                    db.ref('live_orders').push({
+                        token: snapshot.val(),
+                        customer: name,
+                        remarks: remarks,
+                        items: cart,
+                        totalAmount: total,
+                        utr: utr,
+                        status: "Accepted"
+                    });
+                    alert("Order Placed Successfully!");
+                    location.reload();
                 }
             });
         }
-        
-        // Menu Render Logic (Apne purane code se yahan add kar lein)
     </script>
 </body>
 </html>
