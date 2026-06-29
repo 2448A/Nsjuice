@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NS PULP | Admin Dashboard</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <style>
+        body { background-color: #1a1a1a; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #fff; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #CC8400; padding-bottom: 10px; margin-bottom: 20px; }
+        h1 { color: #CC8400; margin: 0; }
+        
+        .order-card { background-color: #333; border-left: 5px solid #CC8400; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .order-header { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
+        .token { color: #CC8400; font-size: 1.5em; }
+        
+        .items-list { font-size: 1.1em; line-height: 1.6; color: #ddd; }
+        .total { font-size: 1.2em; font-weight: bold; color: #4caf50; margin-top: 10px; }
+        .utr-text { font-size: 0.9em; color: #aaa; margin-top: 5px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1em; flex: 1; }
+        .btn-accept { background-color: #CC8400; color: #fff; }
+        .btn-ready { background-color: #25D366; color: #fff; }
+        
+        .status-badge { background-color: #555; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>NS PULP - Live Orders</h1>
+        <div id="connection-status" style="color: #25D366;">🟢 Live</div>
+    </div>
+
+    <div id="orders-container">
+        <h2>Loading orders...</h2>
+    </div>
+
+    <script>
+        // AAPKI FIREBASE MASTER CHABI
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
+            authDomain: "nsjuice-07.firebaseapp.com",
+            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
+            projectId: "nsjuice-07",
+            storageBucket: "nsjuice-07.firebasestorage.app",
+            messagingSenderId: "741674109700",
+            appId: "1:741674109700:web:0ea165b3567f829c805e51"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 🔊 Sound Notification ke liye
+        function playBeep() {
+            let audio = new Audio('https://www.soundjay.com/buttons/sounds/button-14.mp3');
+            audio.play().catch(e => console.log("Sound blocked by browser"));
+        }
+
+        // Live Orders Sun-na (Listening)
+        db.ref('live_orders').on('value', (snapshot) => {
+            let ordersDiv = document.getElementById('orders-container');
+            ordersDiv.innerHTML = ""; 
+            
+            let orders = snapshot.val();
+            let orderCount = 0;
+
+            if (orders) {
+                // Naye orders upar dikhane ke liye reverse karna
+                let orderKeys = Object.keys(orders).reverse();
+                
+                orderKeys.forEach(key => {
+                    let order = orders[key];
+                    
+                    // Sirf Pending aur Accepted orders dikhao (Ready wale hat jayenge)
+                    if(order.status !== "Ready") {
+                        orderCount++;
+                        
+                        let itemsHTML = order.items.map(item => `▫️ ${item.name} (${item.price})`).join("<br>");
+                        
+                        let html = `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <span class="token">Token #${order.token}</span>
+                                <span class="status-badge">${order.status}</span>
+                            </div>
+                            <div><b>Customer:</b> ${order.customer}</div>
+                            <div class="items-list" style="margin-top:10px;">${itemsHTML}</div>
+                            <div class="total">Total: ${order.totalAmount}</div>
+                            <div class="utr-text">UTR/Txn: ${order.utr || 'N/A'}</div>
+                            
+                            <div class="btn-group">
+                                ${order.status === 'Pending' ? `<button class="btn btn-accept" onclick="updateStatus('${key}', 'Accepted')">👨‍🍳 Accept (Preparing)</button>` : ''}
+                                ${order.status === 'Accepted' ? `<button class="btn btn-ready" onclick="updateStatus('${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
+                            </div>
+                        </div>`;
+                        
+                        ordersDiv.innerHTML += html;
+                    }
+                });
+            }
+
+            if(orderCount === 0) {
+                ordersDiv.innerHTML = "<h3 style='color:#777; text-align:center;'>No active orders right now.</h3>";
+            }
+        });
+
+        // Status Update Function
+        function updateStatus(orderId, newStatus) {
+            db.ref('live_orders/' + orderId).update({
+                status: newStatus
+            });
+        }
+    </script>
+</body>
+</html>
