@@ -248,20 +248,38 @@
             document.getElementById('display-token').innerText = "#" + tokenNo;
 
             // Listen for Shop Updates
-            db.ref('live_orders/' + orderId + '/status').on('value', (snapshot) => {
-                let currentStatus = snapshot.val();
-                let statusTextDiv = document.getElementById('display-status');
-                let loaderDiv = document.getElementById('status-loader');
+            // Listen for Shop Updates
+            db.ref('live_orders').on('value', (snapshot) => {
+                let allOrders = snapshot.val();
+                let myToken = tokenNo;
+                let pendingCount = 0;
 
-                if(currentStatus === "Accepted") {
-                    statusTextDiv.innerText = "👨‍🍳 Preparing... (Wait 10-15 Mins)";
-                    statusTextDiv.style.color = "#CC8400";
-                } 
-                else if(currentStatus === "Ready") {
-                    statusTextDiv.innerText = "✅ Order is READY! Please collect.";
-                    statusTextDiv.style.color = "#25D366"; 
-                    loaderDiv.style.display = "none"; 
+                // Line mein kitne log hain wo ginte hain
+                if (allOrders) {
+                    Object.values(allOrders).forEach(order => {
+                        // Agar status 'Ready' nahi hai aur token mujhse chota hai
+                        if (order.status !== 'Ready' && order.token < myToken) {
+                            pendingCount++;
+                        }
+                    });
                 }
+
+                // Status Update
+                let statusTextDiv = document.getElementById('display-status');
+                db.ref('live_orders/' + orderId + '/status').once('value').then((snapshot) => {
+                    let currentStatus = snapshot.val();
+                    
+                    if(currentStatus === "Pending") {
+                        statusTextDiv.innerText = `Line mein aapka number hai: #${pendingCount + 1}. Please wait...`;
+                    } 
+                    else if(currentStatus === "Accepted") {
+                        statusTextDiv.innerText = `👨‍🍳 Aapka order ban raha hai! (Queue mein aap se pehle: ${pendingCount} log)`;
+                    } 
+                    else if(currentStatus === "Ready") {
+                        statusTextDiv.innerText = "✅ Order is READY! Please collect from counter.";
+                        document.getElementById('status-loader').style.display = "none";
+                    }
+                });
             });
         }
     </script>
