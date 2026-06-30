@@ -27,10 +27,20 @@
         .timing-badge { display: inline-block; background: rgba(201, 162, 39, 0.2); padding: 6px 15px; border-radius: 20px; font-size: 0.9em; margin-top: 10px; border: 1px solid var(--gold); color: var(--cream); }
         
         /* Menu Layout */
-        .category-title { color: var(--clay); border-bottom: 2px solid var(--orange); padding-bottom: 5px; margin: 25px 15px 10px; font-weight: 700; text-transform: uppercase; font-size: 1.2em; }
-        .item-row { display: flex; justify-content: space-between; padding: 15px; margin: 8px 15px; background: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); align-items: center; border-left: 4px solid var(--gold); }
-        .item-name { font-weight: 600; font-size: 1.05em; }
-        .btn-size { background: var(--clay); color: #fff; padding: 8px 12px; border: none; border-radius: 6px; margin: 2px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif;}
+        .category-title { color: #fff; background: linear-gradient(135deg, var(--clay), var(--text-dark)); border: 1px solid var(--gold); padding: 10px 18px; margin: 28px 15px 12px; font-weight: 700; text-transform: uppercase; font-size: 1.15em; border-radius: 8px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding: 0 15px; }
+        .item-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.07); overflow: hidden; display: flex; flex-direction: column; border: 1px solid #f0e6d8; }
+        .item-photo-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: var(--cream); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .item-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .item-photo-wrap .item-icon-fallback { font-size: 2.6em; }
+        .item-info { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .item-name { font-weight: 600; font-size: 0.92em; line-height: 1.25; min-height: 2.4em; }
+        .item-price-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+        .item-price { font-weight: 700; color: var(--text-dark); font-size: 0.95em; }
+        .btn-add { background: #fff; color: var(--clay); border: 1.5px solid var(--clay); padding: 5px 14px; border-radius: 7px; font-weight: 700; cursor: pointer; font-size: 0.85em; transition: 0.2s; }
+        .btn-add:hover { background: var(--clay); color: #fff; }
+        .size-row { display: flex; gap: 4px; flex-wrap: wrap; }
+        .btn-size { background: var(--clay); color: #fff; padding: 7px 9px; border: none; border-radius: 6px; margin: 2px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif; font-size: 0.85em; white-space: nowrap;}
         .btn-size:active { transform: scale(0.95); background: var(--orange); }
         
         /* Cart & Checkout */
@@ -63,7 +73,7 @@
     <div id="main-screen">
         <div class="header">
             <h1>NS JUICE</h1>
-            <div class="timing-badge">🕒 Open and clossing time: 10:00 AM - 10:00 PM @Every day</div>
+            <div class="timing-badge">🕒 Open Today: 10:00 AM - 10:00 PM</div>
         </div>
 
         <div id="menu-area"></div>
@@ -148,15 +158,58 @@
 
         // NS JUICE MENU
         const menu = [
-            { cat: "Snacks Menu", name: "Veg Grill Sandwich", price: 50 },
-            { cat: "Snacks Menu", name: "Bun Maska", price: 30 },
-            { cat: "Snacks Menu", name: "Hot Coffee", price: 30 },
-            { cat: "Vegetable Juices", name: "Mix Vegetable", s: 40, m: 50, l: 60 },
-            { cat: "Vegetable Juices", name: "ABC Juice", s: 40, m: 50, l: 60 },
-            { cat: "Fruit Juices", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
-            { cat: "Fruit Juices", name: "Mix Fruit Juice", s: 40, m: 50, l: 60 },
-            { cat: "Natural Shakes", name: "Mango Shake", s: 40, m: 50, l: 60 },
-            { cat: "Natural Shakes", name: "Chocolate Shake", s: 40, m: 50, l: 60 }
+            // --- SNACKS MENU ---
+            { cat: "🍴 Snacks Menu", icon: "☕", img: "images/chai.jpg", name: "Chai", price: 20 },
+            { cat: "🍴 Snacks Menu", icon: "☕", img: "images/hot-coffee.jpg", name: "Hot Coffee", price: 30 },
+            { cat: "🍴 Snacks Menu", icon: "🥟", img: "images/patties-aloo.jpg", name: "Patties (Aloo)", price: 15 },
+            { cat: "🍴 Snacks Menu", icon: "🥟", img: "images/patties-paneer.jpg", name: "Patties (Paneer)", price: 20 },
+            { cat: "🍴 Snacks Menu", icon: "🥪", img: "images/veg-grill-sandwich.jpg", name: "Veg Grill Sandwich", price: 50 },
+            { cat: "🍴 Snacks Menu", icon: "🥪", img: "images/healthy-sandwich.jpg", name: "Healthy Sandwich", price: 60 },
+            { cat: "🍴 Snacks Menu", icon: "🍞", img: "images/bun-maska.jpg", name: "Bun Maska", price: 30 },
+            { cat: "🍴 Snacks Menu", icon: "🍫", img: "images/hot-chocolate.jpg", name: "Hot Chocolate", price: 40 },
+            { cat: "🍴 Snacks Menu", icon: "🥤", img: "images/kulhad-lassi.jpg", name: "Kulhad Lassi", price: 40 },
+
+            // --- VEGETABLE JUICES ---
+            { cat: "🥕 Vegetable Juices", icon: "🥗", img: "images/mix-vegetable-juice.jpg", name: "Mix Vegetable Juice", s: 40, m: 50, l: 60 },
+            { cat: "🥕 Vegetable Juices", icon: "🥕", img: "images/gajar-carrot-juice.jpg", name: "Gajar (Carrot) Juice", s: 30, m: 40, l: 50 },
+            { cat: "🥕 Vegetable Juices", icon: "🍎", img: "images/abc-juice.jpg", name: "ABC Juice", s: 40, m: 50, l: 60 },
+            { cat: "🥕 Vegetable Juices", icon: "🍠", img: "images/chukandar-beetroot-juice.jpg", name: "Chukandar (Beetroot) Juice", s: 50, m: 60, l: 70 },
+
+            // --- FRUIT JUICES ---
+            { cat: "🍊 Fruit Juices", icon: "🍈", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍊", name: "Orange Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍇", name: "Mix Fruit Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍍", name: "Pineapple Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍉", name: "Watermelon Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍋", name: "Sweet Lime Juice", s: 40, m: 50, l: 60 },
+            { cat: "🍊 Fruit Juices", icon: "🍈", name: "Ash Gourd (Petha Fruit)", s: 30, m: 40, l: 50 },
+            { cat: "🍊 Fruit Juices", icon: "🍎", name: "Pomegranate Juice", s: 40, m: 50, l: 60 },
+
+            // --- NATURAL SHAKES ---
+            { cat: "🥤 Natural Shakes", icon: "🍌", name: "Banana", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍫", name: "Banana Chocolate Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🥜", name: "Banana Peanut Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🥭", name: "Mango", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍮", name: "Mango Butter Scotch Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🍈", name: "Papaya", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍓", name: "Mix Fruit Shake", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍐", name: "Cheeku", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🥥", name: "Coconut Shake", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍦", name: "Fruit Cream Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🍏", name: "Apple", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🌰", name: "Khajur Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🥜", name: "Khajur Peanut Shake", s: 60, m: 70, l: 80 },
+            { cat: "🥤 Natural Shakes", icon: "🍌", name: "Khajur Banana Peanut", s: 60, m: 70, l: 80 },
+            { cat: "🥤 Natural Shakes", icon: "🍫", name: "Chocolate Shake", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍪", name: "Oreo Shake", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🍫", name: "Kit-Kat Shake", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "☕", name: "Cold Coffee", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🤍", name: "Vanilla", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🍓", name: "Strawberry Shake", s: 40, m: 50, l: 60 },
+            { cat: "🥤 Natural Shakes", icon: "🥛", name: "Dry Fruit Milk", s: 60, m: 70, l: 80 },
+            { cat: "🥤 Natural Shakes", icon: "💪", name: "Protein Shake", s: 60, m: 70, l: 80 },
+            { cat: "🥤 Natural Shakes", icon: "🍮", name: "Butterscotch Milk", s: 50, m: 60, l: 70 },
+            { cat: "🥤 Natural Shakes", icon: "🫐", name: "Black Currant Milk", s: 50, m: 60, l: 70 }
         ];
 
         let cart = [], total = 0, currentItem = {}, myOrderKey = null, myOrderNum = 0;
@@ -164,18 +217,32 @@
         // Render Menu
         const area = document.getElementById('menu-area');
         let currentCategory = "";
+        let gridDiv = null;
         menu.forEach(i => {
             if(currentCategory !== i.cat) {
-                area.innerHTML += `<div class="category-title">${i.cat}</div>`;
+                area.innerHTML += `<div class="category-title">${i.cat}</div><div class="menu-grid" id="grid-${menu.indexOf(i)}"></div>`;
                 currentCategory = i.cat;
+                gridDiv = document.getElementById(`grid-${menu.indexOf(i)}`);
             }
-            let btns = i.price ? 
-                `<button class="btn-size" onclick="openModal('${i.name}', ${i.price})">₹${i.price}</button>` : 
-                `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S: ₹${i.s}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M: ₹${i.m}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L: ₹${i.l}</button>`;
-            
-            area.innerHTML += `<div class="item-row"><span class="item-name">${i.name}</span><span>${btns}</span></div>`;
+            const photo = i.img ?
+                `<img src="${i.img}" alt="${i.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'item-icon-fallback\\'>${i.icon || '🥤'}</span>'">` :
+                `<span class="item-icon-fallback">${i.icon || '🥤'}</span>`;
+
+            let priceArea = i.price ?
+                `<div class="item-price-row"><span class="item-price">₹${i.price}</span><button class="btn-add" onclick="openModal('${i.name}', ${i.price})">Add</button></div>` :
+                `<div class="size-row">
+                 <button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S ₹${i.s}</button>
+                 <button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M ₹${i.m}</button>
+                 <button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L ₹${i.l}</button>
+                 </div>`;
+
+            gridDiv.innerHTML += `<div class="item-card">
+                <div class="item-photo-wrap">${photo}</div>
+                <div class="item-info">
+                    <span class="item-name">${i.name}</span>
+                    ${priceArea}
+                </div>
+            </div>`;
         });
 
         // Cart & Modal Logic
