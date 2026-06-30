@@ -194,49 +194,74 @@
         }
 
         function enableOrder() {
-            let btn = document.getElementById('place-btn');
-            btn.innerText = "PLACE ORDER NOW";
-            btn.classList.add('active');
+            if(cart.length > 0) {
+                let btn = document.getElementById('place-btn');
+                btn.innerText = "PLACE ORDER NOW";
+                btn.classList.add('active');
+            }
         }
 
-        // Order Placement & Daily Reset Logic
+        // Order Placement & Smart Token Logic
+        function getTodayDate() { return new Date().toLocaleDateString('en-GB'); }
+
         function placeOrder() {
             let name = document.getElementById('custName').value;
-            let payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+            let payMethodInput = document.querySelector('input[name="payMethod"]:checked');
             
-            if(!name || cart.length === 0) { alert("Please enter name and add items!"); return; }
+            if(!name || cart.length === 0) { alert("Please enter your name and add items to the cart!"); return; }
+            if(!payMethodInput) { alert("Please select a payment method!"); return; }
 
-            let today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+            let pMethod = payMethodInput.value;
+            let today = getTodayDate();
 
-            db.ref('daily_counter').transaction((data) => {
-                // Agar date change ho gayi hai, toh counter 1 se start hoga
-                if (!data || data.date !== today) { return { date: today, count: 1 }; } 
-                else { return { date: today, count: data.count + 1 }; }
-            }, (error, comm, snap) => {
-                if(comm) {
-                    myOrderNum = snap.val().count;
-                    let combinedRemarks = cart.filter(i => i.remark).map(i => i.name + ": " + i.remark).join(" | ");
-                    
-                    let newOrder = db.ref('live_orders').push();
-                    myOrderKey = newOrder.key;
-                    
-                    newOrder.set({
-                        orderNumber: myOrderNum,
-                        date: today,
-                        customer: name,
-                        payment: payMethod,
-                        items: cart,
-                        totalAmount: total,
-                        remarks: combinedRemarks,
-                        status: "Pending"
+            db.ref('live_orders').once('value').then((snap) => {
+                let orders = snap.val();
+                let activeExist = false;
+                let maxToken = 0;
+
+                if(orders) {
+                    Object.values(orders).forEach(o => {
+                        if(o.date === today) {
+                            if(o.orderNumber > maxToken) maxToken = o.orderNumber;
+                            if(o.status === 'Pending' || o.status === 'Preparing') {
+                                activeExist = true;
+                            }
+                        }
                     });
+                }
 
-                    // UI Switch
-                    document.getElementById('main-screen').style.display = 'none';
-                    document.getElementById('live-dashboard').style.display = 'block';
-                    document.getElementById('display-order-num').innerText = "#" + myOrderNum;
-                    
-                    trackLiveOrder(today);
+                // If no pending/preparing orders exist today, token restarts at 1!
+                let tokenNo = activeExist ? (maxToken + 1) : 1;
+                
+                saveOrderToFirebase(name, pMethod, tokenNo, today);
+            });
+        }
+
+        function saveOrderToFirebase(name, pMethod, tokenNo, today) {
+            myOrderNum = tokenNo;
+            let combinedRemarks = cart.filter(i => i.remark).map(i => i.name + ": " + i.remark).join(" | ");
+            
+            let newOrder = db.ref('live_orders').push();
+            myOrderKey = newOrder.key;
+            
+            newOrder.set({
+                orderNumber: tokenNo,
+                date: today,
+                customer: name,
+                payment: pMethod,
+                items: cart,
+                totalAmount: total,
+                remarks: combinedRemarks,
+                status: "Pending",
+                placedAt: Date.now()
+            });
+
+            document.getElementById('main-screen').style.display = 'none';
+            document.getElementById('live-dashboard').style.display = 'block';
+            document.getElementById('display-order-num').innerText = "#" + tokenNo;
+            
+            trackLiveOrder(today);
+        }
                 }
             });
         }
