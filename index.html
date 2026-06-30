@@ -3,300 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS Juice | Premium Order</title>
+    <title>NS Juice | Premium Menu</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #5C4033; --accent: #CC8400; --bg: #fdfbf7; --text: #333; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-        
-        /* Welcome Screen Overlay */
-        #welcome-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
-        #welcome-screen h1 { font-size: 3em; margin: 0; color: var(--accent); }
-        
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header h1 { margin: 0; font-size: 2.5em; color: var(--accent); letter-spacing: 2px; }
-        .timing-badge { display: inline-block; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-size: 0.9em; margin-top: 10px; }
-        
-        .category-title { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; margin: 20px 15px 10px; font-weight: 800; text-transform: uppercase; font-size: 1.2em; }
-        .item-row { display: flex; justify-content: space-between; padding: 15px; margin: 5px 15px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; }
-        .btn-size { background: var(--accent); color: white; padding: 8px 15px; border: none; border-radius: 5px; margin: 2px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        
-        .cart-section { margin: 20px 15px; padding: 20px; background: white; border-radius: 10px; border: 2px solid var(--accent); }
-        .payment-options { display: flex; justify-content: space-around; margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; }
-        .payment-options label { font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        
-        .btn-confirm { background: #25D366; color: white; padding: 15px; width: 100%; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.3s; }
-        .btn-confirm.active { opacity: 1; pointer-events: auto; }
-        
-        /* Modal */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index: 1000; }
-        .modal-content { background:#fff; padding:20px; border-radius:15px; width:85%; max-width: 400px; }
-        
-        /* Live Dashboard */
-        #live-dashboard { display: none; text-align: center; padding: 40px 20px; }
-        .order-number { font-size: 5em; color: var(--accent); margin: 10px 0; font-weight: 900; }
-        .status-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 20px; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; color: var(--accent); }
+        .category-title { color: var(--primary); border-bottom: 2px solid var(--accent); padding: 10px; margin: 15px; font-weight: 800; text-transform: uppercase; }
+        .item-row { display: flex; justify-content: space-between; padding: 12px 15px; background: white; margin: 5px 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .btn-size { background: var(--accent); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; }
+        .cart-section { margin: 20px 15px; padding: 20px; background: white; border: 2px solid var(--accent); border-radius: 10px; }
+        .btn-confirm { background: #25D366; color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="welcome-screen">
-        <h1 style="font-size: 5em;">🙏</h1>
-        <h1>Welcome to</h1>
-        <h1 style="color: white; font-size: 2.5em; letter-spacing: 2px; margin-top: 10px;">NS JUICE</h1>
-        <p>Premium Freshness Delivered.</p>
-    </div>
+<div class="header"><h1>NS JUICE</h1><p>Fresh & Healthy</p></div>
 
-    <div id="main-screen">
-        <div class="header">
-            <h1>NS JUICE</h1>
-            <div class="timing-badge">🕒 Open Today: 10:00 AM - 10:00 PM</div>
-        </div>
+<div id="menu-area"></div>
 
-        <div id="menu-area"></div>
+<div class="cart-section">
+    <h3>🛒 Your Cart</h3>
+    <div id="cart-items"></div>
+    <h3 style="text-align:right">Total: ₹<span id="cart-total">0</span></h3>
+    <input type="text" id="custName" placeholder="Enter Name" style="width:100%; padding:10px; margin:10px 0;">
+    <button class="btn-confirm" onclick="placeOrder()">PLACE ORDER</button>
+</div>
 
-        <div class="cart-section">
-            <h2 style="margin-top: 0; color: var(--primary);">🛒 Your Cart</h2>
-            <div id="cart-items">No items selected yet.</div>
-            <h2 style="text-align: right; color: var(--accent); border-top: 1px solid #eee; padding-top: 10px;">Total: ₹<span id="cart-total">0</span></h2>
-            
-            <input type="text" id="custName" placeholder="Enter Your Name / Table No." style="width:100%; padding:15px; margin:10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 1em;">
-            
-            <h3 style="color: var(--primary); margin-bottom: 5px;">Payment Method</h3>
-            <div class="payment-options">
-                <label><input type="radio" name="payMethod" value="GPay" onchange="enableOrder()"> GPay</label>
-                <label><input type="radio" name="payMethod" value="Paytm" onchange="enableOrder()"> Paytm</label>
-                <label><input type="radio" name="payMethod" value="Cash" onchange="enableOrder()"> Cash</label>
-            </div>
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU", authDomain: "nsjuice-07.firebaseapp.com", databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com", projectId: "nsjuice-07", storageBucket: "nsjuice-07.firebasestorage.app", messagingSenderId: "741674109700", appId: "1:741674109700:web:0ea165b3567f829c805e51" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-            <button id="place-btn" class="btn-confirm" onclick="placeOrder()">Select Payment to Proceed</button>
-        </div>
-    </div>
+    const menu = [
+        { cat: "Snacks", name: "Veg Grill Sandwich", price: 50 },
+        { cat: "Snacks", name: "Bun Maska", price: 30 },
+        { cat: "Juices", name: "Mix Veg Juice", s: 40, m: 50, l: 60 },
+        { cat: "Juices", name: "ABC Juice", s: 40, m: 50, l: 60 },
+        { cat: "Juices", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
+        { cat: "Shakes", name: "Mango Shake", s: 40, m: 50, l: 60 },
+        { cat: "Shakes", name: "Chocolate Shake", s: 40, m: 50, l: 60 }
+    ];
 
-    <div id="live-dashboard">
-        <h2 style="color: var(--primary);">Thank you for visiting NS Juice! 🙏</h2>
-        <p>Your Order Number is</p>
-        <div class="order-number" id="display-order-num">#--</div>
-        
-        <div class="status-box">
-            <h3 id="display-status" style="color: var(--accent);">Waiting for Acceptance...</h3>
-            <p id="queue-status" style="color: #666; font-weight: bold;">Checking queue...</p>
-            <p style="color: #999; font-size: 0.9em; margin-top: 15px;">⏳ Estimated Wait Time: 10-15 Minutes</p>
-        </div>
-    </div>
+    let cart = [], total = 0;
+    const area = document.getElementById('menu-area');
+    
+    menu.forEach(i => {
+        let btns = i.price ? `<button class="btn-size" onclick="add('${i.name}', ${i.price})">₹${i.price}</button>` : 
+                            `<button class="btn-size" onclick="add('${i.name} S', ${i.s})">S:₹${i.s}</button><button class="btn-size" onclick="add('${i.name} M', ${i.m})">M:₹${i.m}</button><button class="btn-size" onclick="add('${i.name} L', ${i.l})">L:₹${i.l}</button>`;
+        area.innerHTML += `<div class="item-row"><strong>${i.name}</strong><span>${btns}</span></div>`;
+    });
 
-    <div class="modal" id="prefModal">
-        <div class="modal-content">
-            <h3 id="modalTitle" style="color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 10px;"></h3>
-            <div style="margin: 15px 0;">
-                <label>Ice Preference:</label>
-                <select id="prefIce" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px;">
-                    <option>Regular Ice</option><option>No Ice</option><option>Extra Ice</option>
-                </select>
-            </div>
-            <div style="margin: 15px 0;">
-                <label>Special Instructions:</label>
-                <select id="prefExtra" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px;">
-                    <option>Regular</option><option>No Sugar</option><option>Less Sugar</option><option>No Salt</option><option>Extra Salt</option><option>Add Ice Cream</option>
-                </select>
-            </div>
-            <button class="btn-size" style="width: 100%; padding: 15px; font-size: 1.1em; background: var(--primary);" onclick="saveItem()">Add to Cart</button>
-            <button onclick="document.getElementById('prefModal').style.display='none'" style="width: 100%; padding: 10px; margin-top: 10px; background: transparent; border: none; color: #888;">Cancel</button>
-        </div>
-    </div>
+    function add(name, price) { cart.push({name, price}); total += price; document.getElementById('cart-items').innerHTML += `<div>${name} - ₹${price}</div>`; document.getElementById('cart-total').innerText = total; }
 
-    <script>
-        // Welcome Screen Logic
-        setTimeout(() => {
-            let ws = document.getElementById('welcome-screen');
-            ws.style.opacity = '0';
-            setTimeout(() => ws.style.display = 'none', 500);
-        }, 2500);
-
-        // FIREBASE CONFIG (Aapki Master Keys)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
-            authDomain: "nsjuice-07.firebaseapp.com",
-            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
-            projectId: "nsjuice-07",
-            storageBucket: "nsjuice-07.firebasestorage.app",
-            messagingSenderId: "741674109700",
-            appId: "1:741674109700:web:0ea165b3567f829c805e51"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // MENU DATA
-        const menu = [
-            { cat: "Snacks Menu", name: "Veg Grill Sandwich", price: 50 },
-            { cat: "Snacks Menu", name: "Bun Maska", price: 30 },
-            { cat: "Snacks Menu", name: "Patties (Aloo)", price: 15 },
-            { cat: "Vegetable Juices", name: "Mix Vegetable", s: 40, m: 50, l: 60 },
-            { cat: "Vegetable Juices", name: "ABC Juice", s: 40, m: 50, l: 60 },
-            { cat: "Fruit Juices", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
-            { cat: "Fruit Juices", name: "Pineapple Juice", s: 40, m: 50, l: 60 },
-            { cat: "Natural Shakes", name: "Mango Shake", s: 40, m: 50, l: 60 },
-            { cat: "Natural Shakes", name: "Kit-Kat Shake", s: 50, m: 60, l: 70 }
-        ];
-
-        let cart = [], total = 0, currentItem = {}, myOrderKey = null, myOrderNum = 0;
-
-        // Render Menu
-        const area = document.getElementById('menu-area');
-        let currentCategory = "";
-        menu.forEach(i => {
-            if(currentCategory !== i.cat) {
-                area.innerHTML += `<div class="category-title">${i.cat}</div>`;
-                currentCategory = i.cat;
-            }
-            let btns = i.price ? 
-                `<button class="btn-size" onclick="openModal('${i.name}', ${i.price})">₹${i.price}</button>` : 
-                `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S:₹${i.s}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M:₹${i.m}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L:₹${i.l}</button>`;
-            
-            area.innerHTML += `<div class="item-row"><strong>${i.name}</strong><span>${btns}</span></div>`;
+    function placeOrder() {
+        let name = document.getElementById('custName').value;
+        let today = new Date().toLocaleDateString('en-GB');
+        db.ref('live_orders').once('value').then(snap => {
+            let orders = snap.val(), maxToken = 0;
+            if(orders) Object.values(orders).forEach(o => { if(o.date === today && o.orderNumber > maxToken) maxToken = o.orderNumber; });
+            let tokenNo = maxToken + 1;
+            db.ref('live_orders').push({ orderNumber: tokenNo, date: today, customer: name, items: cart, status: "Pending" });
+            alert("Order Placed! Token: #" + tokenNo);
         });
-
-        // Cart Logic
-        function openModal(name, price) {
-            currentItem = {name, price};
-            document.getElementById('modalTitle').innerText = name + " - ₹" + price;
-            document.getElementById('prefModal').style.display = 'flex';
-        }
-
-        function saveItem() {
-            let ice = document.getElementById('prefIce').value;
-            let extra = document.getElementById('prefExtra').value;
-            let remark = (ice !== "Regular Ice" || extra !== "Regular") ? `(${ice}, ${extra})` : "";
-            
-            cart.push({name: currentItem.name, price: currentItem.price, remark: remark});
-            total += currentItem.price;
-            updateCart();
-            document.getElementById('prefModal').style.display = 'none';
-        }
-
-        function removeItem(idx) {
-            total -= cart[idx].price;
-            cart.splice(idx, 1);
-            updateCart();
-        }
-
-        function updateCart() {
-            let cDiv = document.getElementById('cart-items');
-            cDiv.innerHTML = cart.length === 0 ? "No items selected." : cart.map((i, idx) => 
-                `<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
-                    <span>✔️ ${i.name} <span style="font-size:0.8em; color:gray;">${i.remark}</span></span>
-                    <span>₹${i.price} <button onclick="removeItem(${idx})" style="background:red; color:white; border:none; padding:2px 8px; border-radius:3px;">X</button></span>
-                </div>`).join('');
-            document.getElementById('cart-total').innerText = total;
-        }
-
-        function enableOrder() {
-            if(cart.length > 0) {
-                let btn = document.getElementById('place-btn');
-                btn.innerText = "PLACE ORDER NOW";
-                btn.classList.add('active');
-            }
-        }
-
-        // Order Placement & Smart Token Logic
-        function getTodayDate() { return new Date().toLocaleDateString('en-GB'); }
-
-        function placeOrder() {
-            let name = document.getElementById('custName').value;
-            let payMethodInput = document.querySelector('input[name="payMethod"]:checked');
-            
-            if(!name || cart.length === 0) { alert("Please enter your name and add items to the cart!"); return; }
-            if(!payMethodInput) { alert("Please select a payment method!"); return; }
-
-            let pMethod = payMethodInput.value;
-            let today = getTodayDate();
-
-            db.ref('live_orders').once('value').then((snap) => {
-                let orders = snap.val();
-                let activeExist = false;
-                let maxToken = 0;
-
-                if(orders) {
-                    Object.values(orders).forEach(o => {
-                        if(o.date === today) {
-                            if(o.orderNumber > maxToken) maxToken = o.orderNumber;
-                            if(o.status === 'Pending' || o.status === 'Preparing') {
-                                activeExist = true;
-                            }
-                        }
-                    });
-                }
-
-                // If no pending/preparing orders exist today, token restarts at 1!
-                let tokenNo = activeExist ? (maxToken + 1) : 1;
-                
-                saveOrderToFirebase(name, pMethod, tokenNo, today);
-            });
-        }
-
-        function saveOrderToFirebase(name, pMethod, tokenNo, today) {
-            myOrderNum = tokenNo;
-            let combinedRemarks = cart.filter(i => i.remark).map(i => i.name + ": " + i.remark).join(" | ");
-            
-            let newOrder = db.ref('live_orders').push();
-            myOrderKey = newOrder.key;
-            
-            newOrder.set({
-                orderNumber: tokenNo,
-                date: today,
-                customer: name,
-                payment: pMethod,
-                items: cart,
-                totalAmount: total,
-                remarks: combinedRemarks,
-                status: "Pending",
-                placedAt: Date.now()
-            });
-
-            document.getElementById('main-screen').style.display = 'none';
-            document.getElementById('live-dashboard').style.display = 'block';
-            document.getElementById('display-order-num').innerText = "#" + tokenNo;
-            
-            trackLiveOrder(today);
-        }
-                }
-            });
-        }
-
-        // Live Tracking & Queue Logic
-        function trackLiveOrder(todayDate) {
-            // Watch my own order status
-            db.ref('live_orders/' + myOrderKey).on('value', snap => {
-                let status = snap.val().status;
-                let statDiv = document.getElementById('display-status');
-                if(status === 'Pending') statDiv.innerText = "Waiting for Acceptance...";
-                if(status === 'Preparing') { statDiv.innerText = "👨‍🍳 Preparing..."; statDiv.style.color = "#CC8400"; }
-                if(status === 'Ready') { statDiv.innerText = "✅ ORDER IS READY!"; statDiv.style.color = "#25D366"; document.getElementById('queue-status').innerText = "Please collect from counter."; }
-            });
-
-            // Calculate Queue Position (Orders before me today that are not Ready)
-            db.ref('live_orders').orderByChild('date').equalTo(todayDate).on('value', snap => {
-                let orders = snap.val();
-                let queueCount = 0;
-                if(orders) {
-                    Object.values(orders).forEach(o => {
-                        if(o.orderNumber < myOrderNum && o.status !== 'Ready') {
-                            queueCount++;
-                        }
-                    });
-                }
-                
-                let myStatus = document.getElementById('display-status').innerText;
-                if(myStatus !== "✅ ORDER IS READY!") {
-                    document.getElementById('queue-status').innerText = queueCount > 0 ? 
-                        `Orders ahead of you: ${queueCount}` : 
-                        "You are next in line!";
-                }
-            });
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
