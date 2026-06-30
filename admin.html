@@ -1,136 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS PULP | Centralized Admin Dashboard</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
-    <style>
-        body { background-color: #1a1a1a; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; color: #fff; display: flex; flex-direction: column; height: 100vh; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #CC8400; padding-bottom: 10px; margin-bottom: 20px; }
-        h1 { color: #CC8400; margin: 0; font-size: 2.2em; }
-        
-        .main-container { display: flex; gap: 20px; flex-grow: 1; }
-        .status-column { flex: 1; background-color: #2a2a2a; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; }
-        .status-header { text-align: center; font-size: 1.5em; font-weight: bold; border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 15px; }
-        .orders-list { flex-grow: 1; overflow-y: auto; }
-        
-        /* Specific column colors */
-        #column-pending .status-header { color: #ff9800; border-color: #ff9800; }
-        #column-preparing .status-header { color: #CC8400; border-color: #CC8400; }
-        #column-ready .status-header { color: #25D366; border-color: #25D366; }
-        
-        .order-card { background-color: #333; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        .order-card .token-header { display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
-        .order-card .token-no { color: #CC8400; font-size: 1.5em; }
-        
-        .items-list { font-size: 1.1em; line-height: 1.6; color: #ddd; }
-        .item-row { display: flex; justify-content: space-between; }
-        .total { font-size: 1.2em; font-weight: bold; color: #4caf50; margin-top: 10px; }
-        
-        .note { color: #ff9800; font-weight: bold; margin-top: 5px; font-size: 0.9em; }
-        
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1em; flex: 1; }
-        .btn-pending { background-color: #ff9800; color: #fff; }
-        .btn-preparing { background-color: #CC8400; color: #fff; }
-        .btn-ready { background-color: #25D366; color: #fff; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NS Juice | Live Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<style>
+:root{
+  --cream:#FBF5E9; --clay:#9B5A33; --clay-dark:#6B3A1E; --brown-deep:#33190C;
+  --gold:#C9A227; --gold-light:#E8C766; --orange:#E2742A; --leaf:#5C7A3D; --red:#D6483B;
+}
+*{box-sizing:border-box;}
+body{
+  background:#181210; font-family:'Poppins',sans-serif; margin:0; padding:18px; color:#fff;
+  display:flex; flex-direction:column; min-height:100vh;
+}
+.header{
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  border-bottom:2px solid var(--gold); padding-bottom:14px; margin-bottom:18px;
+}
+.header .brand{font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size:30px; font-weight:700;}
+.header .brand small{display:block; font-family:'Poppins'; font-size:11px; letter-spacing:2px; color:var(--orange); font-weight:600;}
+.header .date-badge{font-size:13px; color:#ccc; background:#262019; padding:8px 16px; border-radius:20px;}
+#connection-status{font-size:13px; font-weight:700;}
+
+.summary-row{display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;}
+.summary-card{
+  flex:1; min-width:140px; background:#221b15; border-radius:10px; padding:14px 18px;
+  border-left:4px solid var(--gold); text-align:center;
+}
+.summary-card .num{font-size:28px; font-weight:800; color:var(--gold-light);}
+.summary-card .lbl{font-size:11.5px; color:#bbb; text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+.summary-card.pending{border-color:#ff9800;} .summary-card.pending .num{color:#ff9800;}
+.summary-card.preparing{border-color:var(--clay);} .summary-card.preparing .num{color:var(--gold-light);}
+.summary-card.ready{border-color:#25D366;} .summary-card.ready .num{color:#25D366;}
+
+.main-container{display:flex; gap:18px; flex-grow:1; flex-wrap:wrap;}
+.status-column{flex:1; min-width:300px; background:#1f1812; border-radius:12px; padding:16px; display:flex; flex-direction:column;}
+.status-header{text-align:center; font-size:1.3em; font-weight:700; border-bottom:2px solid #444; padding-bottom:10px; margin-bottom:14px;}
+.orders-list{flex-grow:1; overflow-y:auto; max-height:75vh;}
+
+#column-pending .status-header{color:#ff9800; border-color:#ff9800;}
+#column-preparing .status-header{color:var(--gold-light); border-color:var(--clay);}
+#column-ready .status-header{color:#25D366; border-color:#25D366;}
+
+.order-card{
+  background:#2a221a; border-radius:10px; padding:15px; margin-bottom:14px;
+  box-shadow:0 4px 10px rgba(0,0,0,.35); border:1px solid #3a3025;
+}
+.order-card .token-header{display:flex; justify-content:space-between; align-items:center; font-size:1.1em; font-weight:700; border-bottom:1px solid #444; padding-bottom:9px; margin-bottom:9px;}
+.order-card .token-no{color:var(--gold-light); font-size:1.4em; font-family:'Cormorant Garamond',serif;}
+.order-card .cust-info{font-size:13px; color:#ddd; text-align:right;}
+.order-card .cust-info .phone{display:block; color:#25D366; font-size:12px; margin-top:2px;}
+
+.items-list{font-size:13.5px; line-height:1.7; color:#ddd;}
+.item-row{display:flex; justify-content:space-between;}
+.total{font-size:1.05em; font-weight:700; color:#4caf50; margin-top:8px;}
+.note{color:#ff9800; font-weight:600; margin-top:6px; font-size:0.85em;}
+.elapsed{font-size:11.5px; color:#888; margin-top:6px;}
+
+.btn-group{display:flex; gap:10px; margin-top:13px;}
+.btn{padding:11px; border:none; border-radius:7px; font-weight:700; cursor:pointer; font-size:13.5px; flex:1; transition:transform .15s ease;}
+.btn:hover{transform:translateY(-2px);}
+.btn-preparing{background:var(--clay); color:#fff;}
+.btn-ready{background:#25D366; color:#fff;}
+.empty-msg{color:#555; text-align:center; padding:24px; font-size:13px;}
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>NS PULP - Live Control Center</h1>
-        <div id="connection-status" style="color: #25D366;">🟢 Live</div>
-    </div>
+<div class="header">
+  <div class="brand">NS Juice<small>LIVE CONTROL CENTER</small></div>
+  <div class="date-badge" id="dateBadge">Today: --</div>
+  <div id="connection-status" style="color:#25D366;">🟢 Live</div>
+</div>
 
-    <div class="main-container">
-        
-        <div class="status-column" id="column-pending">
-            <div class="status-header">Pending Orders</div>
-            <div class="orders-list" id="pending-orders"></div>
-        </div>
+<div class="summary-row">
+  <div class="summary-card pending"><div class="num" id="countPending">0</div><div class="lbl">Pending</div></div>
+  <div class="summary-card preparing"><div class="num" id="countPreparing">0</div><div class="lbl">Preparing</div></div>
+  <div class="summary-card ready"><div class="num" id="countReady">0</div><div class="lbl">Ready</div></div>
+</div>
 
-        <div class="status-column" id="column-preparing">
-            <div class="status-header">In Preparation</div>
-            <div class="orders-list" id="preparing-orders"></div>
-        </div>
+<div class="main-container">
+  <div class="status-column" id="column-pending">
+    <div class="status-header">Pending Orders</div>
+    <div class="orders-list" id="pending-orders"></div>
+  </div>
+  <div class="status-column" id="column-preparing">
+    <div class="status-header">In Preparation</div>
+    <div class="orders-list" id="preparing-orders"></div>
+  </div>
+  <div class="status-column" id="column-ready">
+    <div class="status-header">Ready for Collection</div>
+    <div class="orders-list" id="ready-orders"></div>
+  </div>
+</div>
 
-        <div class="status-column" id="column-ready">
-            <div class="status-header">Ready for Collection</div>
-            <div class="orders-list" id="ready-orders"></div>
-        </div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
+  authDomain: "nsjuice-07.firebaseapp.com",
+  databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
+  projectId: "nsjuice-07",
+  storageBucket: "nsjuice-07.firebasestorage.app",
+  messagingSenderId: "741674109700",
+  appId: "1:741674109700:web:0ea165b3567f829c805e51"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    </div>
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+}
+function prettyDate(){
+  const d = new Date();
+  return d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+}
+function elapsedMins(ts){
+  if(!ts) return '';
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  return mins <= 0 ? 'just now' : mins + ' min ago';
+}
 
-    <script>
-        // FIREBASE CONF (Aapki Master Chabi)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
-            authDomain: "nsjuice-07.firebaseapp.com",
-            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
-            projectId: "nsjuice-07",
-            storageBucket: "nsjuice-07.firebasestorage.app",
-            messagingSenderId: "741674109700",
-            appId: "1:741674109700:web:0ea165b3567f829c805e51"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+let activeDate = todayKey();
+document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
 
-        // Orders ko Columns mein split karne ka logic
-        db.ref('live_orders').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            
-            // Sabse pehle teeno lists ko khali karein
-            document.getElementById('pending-orders').innerHTML = '';
-            document.getElementById('preparing-orders').innerHTML = '';
-            document.getElementById('ready-orders').innerHTML = '';
-            
-            if (orders) {
-                // Latest orders ko upar laane ke liye reverse karein
-                Object.keys(orders).reverse().forEach(key => {
-                    const order = orders[key];
-                    const targetListId = order.status.toLowerCase() + '-orders';
-                    
-                    // Naya order card HTML
-                    const itemsHTML = order.items.map(item => `
-                        <div class="item-row">
-                            <span>▫️ ${item.name}</span>
-                            <span style="color:#CC8400; font-weight:bold;">${item.price}</span>
-                        </div>`).join("");
-                    
-                    const cardHTML = `
-                        <div class="order-card">
-                            <div class="token-header">
-                                <span class="token-no">Token #${order.token}</span>
-                                <span>${order.customer}</span>
-                            </div>
-                            <div class="items-list">${itemsHTML}</div>
-                            <div class="total">Total: ${order.totalAmount}</div>
-                            
-                            <div class="note">Note: ${order.remarks || 'None'}</div>
-                            
-                            <div class="btn-group">
-                                ${order.status === 'Pending' ? `<button class="btn btn-preparing" onclick="updateStatus('${key}', 'Preparing')">👨‍🍳 Accept & Prepare</button>` : ''}
-                                ${order.status === 'Preparing' ? `<button class="btn btn-ready" onclick="updateStatus('${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
-                                ${order.status === 'Ready' ? `<p style="text-align:center; color:#777; width:100%;">Wait for customer to collect</p>` : ''}
-                            </div>
-                        </div>`;
-                    
-                    document.getElementById(targetListId).innerHTML += cardHTML;
-                });
-            }
-        });
+function attachListener(date){
+  db.ref('orders/' + date).on('value', (snapshot) => {
+    const orders = snapshot.val();
+    const pendingEl = document.getElementById('pending-orders');
+    const preparingEl = document.getElementById('preparing-orders');
+    const readyEl = document.getElementById('ready-orders');
+    pendingEl.innerHTML = ''; preparingEl.innerHTML = ''; readyEl.innerHTML = '';
 
-        // Status Update function
-        function updateStatus(orderId, newStatus) {
-            db.ref('live_orders/' + orderId).update({
-                status: newStatus
-            });
-        }
-    </script>
+    let counts = {Pending:0, Preparing:0, Ready:0};
+
+    if(orders){
+      const keys = Object.keys(orders).sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
+      keys.forEach(key => {
+        const order = orders[key];
+        counts[order.status] = (counts[order.status] || 0) + 1;
+        const targetListId = order.status.toLowerCase() + '-orders';
+
+        const itemsHTML = order.items.map(item => `
+          <div class="item-row">
+            <span>▫️ ${item.name} ${item.remark || ''}</span>
+            <span style="color:var(--gold-light); font-weight:700;">₹${item.price}</span>
+          </div>`).join("");
+
+        const cardHTML = `
+          <div class="order-card">
+            <div class="token-header">
+              <span class="token-no">Order #${order.orderNumber}</span>
+              <span class="cust-info">${order.customer}<span class="phone">📱 ${order.phone || '—'}</span></span>
+            </div>
+            <div class="items-list">${itemsHTML}</div>
+            <div class="total">Total: ₹${order.totalAmount}</div>
+            <div class="note">Note: ${order.remarks || 'None'}</div>
+            <div class="elapsed">🕐 Placed ${elapsedMins(order.placedAt)}</div>
+            <div class="btn-group">
+              ${order.status === 'Pending' ? `<button class="btn btn-preparing" onclick="updateStatus('${date}','${key}', 'Preparing')">👨‍🍳 Accept &amp; Prepare</button>` : ''}
+              ${order.status === 'Preparing' ? `<button class="btn btn-ready" onclick="updateStatus('${date}','${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
+              ${order.status === 'Ready' ? `<p style="text-align:center; color:#777; width:100%; font-size:12.5px;">Waiting for customer to collect</p>` : ''}
+            </div>
+          </div>`;
+
+        document.getElementById(targetListId).innerHTML += cardHTML;
+      });
+    }
+
+    document.getElementById('countPending').textContent = counts.Pending || 0;
+    document.getElementById('countPreparing').textContent = counts.Preparing || 0;
+    document.getElementById('countReady').textContent = counts.Ready || 0;
+
+    ['pending-orders','preparing-orders','ready-orders'].forEach(id => {
+      const el = document.getElementById(id);
+      if(!el.innerHTML.trim()) el.innerHTML = '<div class="empty-msg">No orders here</div>';
+    });
+  });
+}
+
+attachListener(activeDate);
+
+// Refresh date key automatically at midnight rollover (checks every minute)
+setInterval(() => {
+  const nowKey = todayKey();
+  if(nowKey !== activeDate){
+    db.ref('orders/' + activeDate).off();
+    activeDate = nowKey;
+    document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
+    attachListener(activeDate);
+  }
+}, 60000);
+
+function updateStatus(date, orderId, newStatus){
+  db.ref('orders/' + date + '/' + orderId).update({ status: newStatus, statusUpdatedAt: Date.now() });
+}
+</script>
 </body>
 </html>
