@@ -249,8 +249,8 @@
                 if(orders) {
                     Object.values(orders).forEach(o => {
                         if(o.date === today) {
-                            if(o.orderNumber > maxToken) maxToken = o.orderNumber;
-                            if(o.status === 'Pending' || o.status === 'Preparing') {
+                            if(o.status === 'Preparing') {
+                                if(o.orderNumber > maxToken) maxToken = o.orderNumber;
                                 activeExist = true;
                             }
                         }
