@@ -112,13 +112,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function todayKey(){
-  const d = new Date();
-  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+// Get today's date in DD/MM/YYYY format to match customer app
+function getTodayDate() {
+  return new Date().toLocaleDateString('en-GB'); 
 }
 function prettyDate(){
-  const d = new Date();
-  return d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  return new Date().toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
 }
 function elapsedMins(ts){
   if(!ts) return '';
@@ -126,79 +125,76 @@ function elapsedMins(ts){
   return mins <= 0 ? 'just now' : mins + ' min ago';
 }
 
-let activeDate = todayKey();
 document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
 
-function attachListener(date){
-  db.ref('orders/' + date).on('value', (snapshot) => {
-    const orders = snapshot.val();
-    const pendingEl = document.getElementById('pending-orders');
-    const preparingEl = document.getElementById('preparing-orders');
-    const readyEl = document.getElementById('ready-orders');
-    pendingEl.innerHTML = ''; preparingEl.innerHTML = ''; readyEl.innerHTML = '';
+// Listen to 'live_orders' where index.html is sending data
+db.ref('live_orders').on('value', (snapshot) => {
+  const orders = snapshot.val();
+  const pendingEl = document.getElementById('pending-orders');
+  const preparingEl = document.getElementById('preparing-orders');
+  const readyEl = document.getElementById('ready-orders');
+  
+  pendingEl.innerHTML = ''; preparingEl.innerHTML = ''; readyEl.innerHTML = '';
+  let counts = {Pending:0, Preparing:0, Ready:0};
+  let today = getTodayDate();
 
-    let counts = {Pending:0, Preparing:0, Ready:0};
+  if(orders){
+    // Filter only today's orders and sort by Order Number (latest first)
+    const keys = Object.keys(orders)
+      .filter(key => orders[key].date === today)
+      .sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
 
-    if(orders){
-      const keys = Object.keys(orders).sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
-      keys.forEach(key => {
-        const order = orders[key];
-        counts[order.status] = (counts[order.status] || 0) + 1;
-        const targetListId = order.status.toLowerCase() + '-orders';
+    keys.forEach(key => {
+      const order = orders[key];
+      counts[order.status] = (counts[order.status] || 0) + 1;
+      const targetListId = order.status.toLowerCase() + '-orders';
 
-        const itemsHTML = order.items.map(item => `
-          <div class="item-row">
-            <span>▫️ ${item.name} ${item.remark || ''}</span>
-            <span style="color:var(--gold-light); font-weight:700;">₹${item.price}</span>
-          </div>`).join("");
+      const itemsHTML = (order.items || []).map(item => `
+        <div class="item-row">
+          <span>▫️ ${item.name} <span style="font-size:0.85em;color:#ff9800;">${item.remark || ''}</span></span>
+          <span style="color:var(--gold-light); font-weight:700;">₹${item.price}</span>
+        </div>`).join("");
 
-        const cardHTML = `
-          <div class="order-card">
-            <div class="token-header">
-              <span class="token-no">Order #${order.orderNumber}</span>
-              <span class="cust-info">${order.customer}<span class="phone">📱 ${order.phone || '—'}</span></span>
-            </div>
-            <div class="items-list">${itemsHTML}</div>
-            <div class="total">Total: ₹${order.totalAmount}</div>
-            <div class="note">Note: ${order.remarks || 'None'}</div>
-            <div class="elapsed">🕐 Placed ${elapsedMins(order.placedAt)}</div>
-            <div class="btn-group">
-              ${order.status === 'Pending' ? `<button class="btn btn-preparing" onclick="updateStatus('${date}','${key}', 'Preparing')">👨‍🍳 Accept &amp; Prepare</button>` : ''}
-              ${order.status === 'Preparing' ? `<button class="btn btn-ready" onclick="updateStatus('${date}','${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
-              ${order.status === 'Ready' ? `<p style="text-align:center; color:#777; width:100%; font-size:12.5px;">Waiting for customer to collect</p>` : ''}
-            </div>
-          </div>`;
+      // Customer payment method added in the header
+      const cardHTML = `
+        <div class="order-card">
+          <div class="token-header">
+            <span class="token-no">Order #${order.orderNumber}</span>
+            <span class="cust-info">${order.customer}<br><span class="phone" style="color:var(--gold-light);">💳 ${order.payment || 'Cash'}</span></span>
+          </div>
+          <div class="items-list">${itemsHTML}</div>
+          <div class="total">Total: ₹${order.totalAmount}</div>
+          <div class="note">Note: ${order.remarks || 'None'}</div>
+          <div class="elapsed">🕐 Placed ${elapsedMins(order.placedAt || Date.now())}</div>
+          <div class="btn-group">
+            ${order.status === 'Pending' ? `<button class="btn btn-preparing" onclick="updateStatus('${key}', 'Preparing')">👨‍🍳 Accept &amp; Prepare</button>` : ''}
+            ${order.status === 'Preparing' ? `<button class="btn btn-ready" onclick="updateStatus('${key}', 'Ready')">✅ Mark as Ready</button>` : ''}
+            ${order.status === 'Ready' ? `<p style="text-align:center; color:#777; width:100%; font-size:12.5px;">Waiting for customer to collect</p>` : ''}
+          </div>
+        </div>`;
 
-        document.getElementById(targetListId).innerHTML += cardHTML;
-      });
-    }
-
-    document.getElementById('countPending').textContent = counts.Pending || 0;
-    document.getElementById('countPreparing').textContent = counts.Preparing || 0;
-    document.getElementById('countReady').textContent = counts.Ready || 0;
-
-    ['pending-orders','preparing-orders','ready-orders'].forEach(id => {
-      const el = document.getElementById(id);
-      if(!el.innerHTML.trim()) el.innerHTML = '<div class="empty-msg">No orders here</div>';
+      document.getElementById(targetListId).innerHTML += cardHTML;
     });
-  });
-}
-
-attachListener(activeDate);
-
-// Refresh date key automatically at midnight rollover (checks every minute)
-setInterval(() => {
-  const nowKey = todayKey();
-  if(nowKey !== activeDate){
-    db.ref('orders/' + activeDate).off();
-    activeDate = nowKey;
-    document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
-    attachListener(activeDate);
   }
-}, 60000);
 
-function updateStatus(date, orderId, newStatus){
-  db.ref('orders/' + date + '/' + orderId).update({ status: newStatus, statusUpdatedAt: Date.now() });
+  // Update Counters
+  document.getElementById('countPending').textContent = counts.Pending;
+  document.getElementById('countPreparing').textContent = counts.Preparing;
+  document.getElementById('countReady').textContent = counts.Ready;
+
+  // Show empty messages if no orders
+  ['pending-orders','preparing-orders','ready-orders'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el.innerHTML.trim()) el.innerHTML = '<div class="empty-msg">No orders here</div>';
+  });
+});
+
+// Update Status in Firebase
+function updateStatus(orderId, newStatus){
+  db.ref('live_orders/' + orderId).update({ 
+      status: newStatus, 
+      statusUpdatedAt: Date.now() 
+  });
 }
 </script>
 </body>
