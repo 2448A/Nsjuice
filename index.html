@@ -1,402 +1,693 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS Juice | Premium Order</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        :root { 
-            --cream: #FBF5E9; 
-            --clay: #9B5A33; 
-            --gold: #C9A227; 
-            --orange: #E2742A;
-            --text-dark: #33190C;
-        }
-        body { font-family: 'Poppins', sans-serif; margin: 0; background: var(--cream); color: var(--text-dark); }
-        
-        /* Welcome Screen Overlay */
-        #welcome-screen { position: fixed; inset: 0; width: 100vw; height: 100vh; min-height: 100dvh; background: var(--text-dark); color: var(--cream); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.6s ease; text-align: center; padding: 20px; box-sizing: border-box; margin: 0;}
-        #welcome-screen h1.logo { font-family: 'Cormorant Garamond', serif; font-size: 3.5em; margin: 10px 0; color: var(--gold); letter-spacing: 2px; }
-        
-        /* Header */
-        .header { background: var(--text-dark); color: var(--cream); padding: 20px; text-align: center; border-bottom: 3px solid var(--gold); }
-        .header h1 { font-family: 'Cormorant Garamond', serif; margin: 0; font-size: 2.8em; color: var(--gold); letter-spacing: 2px; }
-        .timing-badge { display: inline-block; background: rgba(201, 162, 39, 0.2); padding: 6px 15px; border-radius: 20px; font-size: 0.9em; margin-top: 10px; border: 1px solid var(--gold); color: var(--cream); }
-        
-        /* Menu Layout */
-        .category-title { color: #fff; background: linear-gradient(135deg, var(--clay), var(--text-dark)); border: 1px solid var(--gold); padding: 10px 18px; margin: 28px 15px 12px; font-weight: 700; text-transform: uppercase; font-size: 1.15em; border-radius: 8px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; padding: 0 15px; }
-        .item-card { background: #fff; border-radius: 16px; box-shadow: 0 6px 16px rgba(0,0,0,0.09); overflow: hidden; display: flex; flex-direction: column; border: 1px solid #ead9c0; transition: transform 0.25s ease, box-shadow 0.25s ease; }
-        .item-card:hover { transform: translateY(-4px); box-shadow: 0 10px 22px rgba(0,0,0,0.14); }
-        .item-photo-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: linear-gradient(135deg, var(--cream), #fff); display: flex; align-items: center; justify-content: center; overflow: hidden; border-bottom: 2px solid var(--gold); }
-        .item-photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .item-photo-wrap .item-icon-fallback { font-size: 4.2em; }
-        .item-info { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .item-name { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.35em; line-height: 1.25; min-height: 2.2em; color: var(--text-dark); }
-        .item-price-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; border-top: 1px dashed #e6d6bd; }
-        .item-price { font-weight: 700; color: var(--clay); font-size: 1.2em; }
-        .btn-add { background: var(--clay); color: #fff; border: 1.5px solid var(--clay); padding: 8px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.95em; transition: 0.2s; letter-spacing: 0.5px; }
-        .btn-add:hover { background: var(--text-dark); border-color: var(--text-dark); }
-        .size-row { display: flex; gap: 4px; flex-wrap: wrap; }
-        .btn-size { background: var(--clay); color: #fff; padding: 8px 12px; border: none; border-radius: 7px; margin: 2px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif; font-size: 0.9em; white-space: nowrap;}
-        .btn-size:active { transform: scale(0.95); background: var(--orange); }
-        
-        /* Cart & Checkout */
-        .cart-section { margin: 30px 15px; padding: 20px; background: #fff; border-radius: 12px; border: 2px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .payment-options { display: flex; justify-content: space-around; margin: 15px 0; padding: 15px; background: var(--cream); border-radius: 8px; border: 1px solid #eee; }
-        .payment-options label { font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        
-        .input-field { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; font-family: 'Poppins', sans-serif; background: #fafafa;}
-        .btn-confirm { background: #25D366; color: white; padding: 16px; width: 100%; border: none; border-radius: 8px; font-size: 1.2em; font-weight: 700; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.3s; font-family: 'Poppins', sans-serif; margin-top: 10px;}
-        .btn-confirm.active { opacity: 1; pointer-events: auto; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); }
-        
-        /* Modals & Tracking */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(51, 25, 12, 0.85); display:none; justify-content:center; align-items:center; z-index: 1000; }
-        .modal-content { background:#fff; padding:25px; border-radius:15px; width:85%; max-width: 400px; }
-        
-        #live-dashboard { display: none; text-align: center; padding: 40px 20px; }
-        .order-number { font-size: 5.5em; color: var(--orange); margin: 10px 0; font-family: 'Cormorant Garamond', serif; font-weight: 700; line-height: 1; }
-        .status-box { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-top: 25px; border-top: 5px solid var(--gold); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NS Juice — Order Now</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<style>
+:root{
+  --cream:#FBF5E9; --cream-soft:#F3E9D6; --clay:#9B5A33; --clay-dark:#6B3A1E;
+  --brown:#4A2C17; --brown-deep:#33190C; --gold:#C9A227; --gold-light:#E8C766;
+  --orange:#E2742A; --leaf:#5C7A3D; --ink:#2A1A0E; --paper:#FFFDF8; --red:#D6483B;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Poppins',sans-serif; color:var(--ink); padding-bottom:50px;
+  background:
+    radial-gradient(ellipse 600px 360px at 90% 0%, rgba(201,162,39,.10), transparent 60%),
+    radial-gradient(ellipse 500px 420px at 0% 30%, rgba(94,122,61,.08), transparent 60%),
+    var(--cream);
+}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;}
+
+/* ---------- overlays ---------- */
+.overlay{
+  position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 50% 0%, var(--clay-dark), var(--brown-deep) 70%);
+  text-align:center; padding:30px; color:var(--cream); flex-direction:column; gap:14px;
+}
+.overlay .hands{font-size:54px; filter:drop-shadow(0 6px 14px rgba(0,0,0,.35));}
+.overlay h1{font-size:34px; color:var(--gold-light); font-weight:700;}
+.overlay p{font-size:15px; opacity:.9; max-width:340px; line-height:1.6;}
+.overlay .timing-chip{
+  margin-top:10px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+  padding:10px 20px; border-radius:30px; font-size:13.5px; font-weight:600;
+}
+.overlay button{
+  margin-top:18px; background:var(--orange); color:#fff; border:none; padding:15px 36px;
+  border-radius:30px; font-weight:700; font-size:15.5px; cursor:pointer;
+  box-shadow:0 10px 24px rgba(226,116,42,.4); transition:transform .2s ease;
+}
+.overlay button:hover{transform:translateY(-2px);}
+.overlay.closed{background:radial-gradient(circle at 50% 0%, #5a2d2d, var(--brown-deep) 70%);}
+.overlay .clock-big{font-size:42px; font-weight:800; color:var(--gold-light); letter-spacing:1px;}
+
+/* ---------- header ---------- */
+header{
+  background:linear-gradient(160deg, var(--brown-deep), #221008); color:var(--cream); padding:22px 18px 18px;
+  text-align:center; position:sticky; top:0; z-index:50;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+}
+header .brand-row{display:flex; align-items:center; justify-content:center; gap:10px;}
+header .logo-mark{
+  width:38px; height:38px; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, var(--gold-light), var(--clay) 70%);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
+}
+header .brand{font-family:'Cormorant Garamond',serif; font-size:27px; font-weight:700; color:var(--gold-light); line-height:1;}
+header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
+.status-bar{
+  display:flex; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap; font-size:12px;
+}
+.status-pill{
+  padding:6px 14px; border-radius:20px; font-weight:600; display:flex; align-items:center; gap:6px;
+}
+.status-pill.open{background:rgba(92,122,61,.25); color:#a8d180; border:1px solid rgba(168,209,128,.4);}
+.status-pill.closed-pill{background:rgba(214,72,59,.2); color:#f0a39c; border:1px solid rgba(240,163,156,.4);}
+.status-pill.time{background:rgba(255,255,255,.08); color:var(--cream); border:1px solid rgba(255,255,255,.18);}
+
+/* ---------- menu ---------- */
+.category-title{
+  display:flex; align-items:center; gap:8px;
+  background:linear-gradient(120deg, var(--clay-dark), #5a3014); color:var(--gold-light); padding:12px 18px; margin:26px 12px 10px;
+  border-radius:10px; font-weight:700; text-transform:uppercase; font-size:12.5px; letter-spacing:1.5px;
+  box-shadow:0 4px 12px rgba(74,44,23,.2);
+}
+.item-row{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:13px 16px; margin:0 12px; border:1px solid rgba(74,44,23,.06);
+  background:var(--paper); border-radius:12px; margin-bottom:9px;
+  box-shadow:0 3px 10px rgba(74,44,23,.06); transition:transform .15s ease, box-shadow .15s ease;
+}
+.item-row:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(74,44,23,.1);}
+.item-row .item-left{display:flex; align-items:center; gap:12px; flex:1; min-width:0;}
+.item-icon{
+  width:70px; height:70px; flex-shrink:0; border-radius:14px; background:var(--cream-soft);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  box-shadow:0 2px 8px rgba(74,44,23,.15);
+}
+.item-icon img{width:100%; height:100%; object-fit:contain; display:block; border-radius:12px; padding:3px;}
+.item-icon.item-icon-empty{font-size:22px;}
+.item-icon svg{width:26px; height:26px; filter:drop-shadow(0 1px 2px rgba(74,44,23,.15));}
+.item-row .name{font-weight:600; font-size:16px; color:var(--ink); flex:1; min-width:0; line-height:1.35;}
+.btn-size{
+  background:var(--clay); color:#fff; padding:10px 14px; border:none; border-radius:8px;
+  margin:2px; font-weight:700; font-size:14px; cursor:pointer; transition:transform .15s ease, background .15s ease;
+}
+.btn-size:hover{background:var(--orange); transform:translateY(-2px);}
+.size-group{display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;}
+
+/* ---------- cart ---------- */
+.cart-section{
+  padding:24px 18px; background:var(--paper); margin:30px 12px; border-radius:18px;
+  box-shadow:0 14px 36px rgba(74,44,23,.12); border:1px solid rgba(74,44,23,.06);
+}
+.cart-section h3{
+  color:var(--clay-dark); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-bottom:8px;
+  font-size:22px; display:flex; align-items:center; gap:8px;
+}
+.cart-item{padding:11px 0; border-bottom:1px dashed #e3d8c2; display:flex; justify-content:space-between; align-items:center;}
+.cart-item button{background:var(--red); color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-weight:700;}
+.cart-total{text-align:right; color:var(--orange); font-size:20px; font-weight:700; margin-top:12px;}
+
+/* qty stepper */
+.qty-stepper{display:flex; align-items:center; gap:7px;}
+.qty-stepper button{
+  width:27px; height:27px; border-radius:7px; border:none; background:var(--clay); color:#fff;
+  font-weight:800; font-size:15px; cursor:pointer; line-height:1; padding:0; transition:background .15s ease;
+}
+.qty-stepper button:hover{background:var(--clay-dark);}
+.qty-stepper button.remove-btn{background:var(--red);}
+.qty-stepper button.remove-btn:hover{background:#b8392c;}
+.qty-stepper .qty-num{font-weight:700; min-width:16px; text-align:center; font-size:14px;}
+
+/* payment section */
+.payment-section{margin:20px 0 8px;}
+.payment-section h4{font-size:13.5px; color:var(--brown); margin-bottom:10px; font-weight:700;}
+.pay-options{display:flex; gap:10px;}
+.pay-btn{
+  flex:1; padding:15px 8px; border-radius:12px; border:2px solid #e3d8c2; background:var(--paper);
+  cursor:pointer; text-align:center; font-weight:700; font-size:12.5px; color:var(--brown);
+  transition:all .15s ease;
+}
+.pay-btn:hover{border-color:var(--gold);}
+.pay-btn .pay-icon{font-size:23px; display:block; margin-bottom:5px;}
+.pay-btn.selected{border-color:var(--orange); background:#fff3e6; color:var(--orange); transform:translateY(-2px); box-shadow:0 8px 18px rgba(226,116,42,.25);}
+.pay-note{font-size:11.5px; color:#8a7256; margin-top:9px; text-align:center;}
+input.field{
+  width:100%; padding:14px; margin:11px 0; border:1.5px solid #e3d8c2; border-radius:10px;
+  font-size:14px; font-family:'Poppins'; box-sizing:border-box; transition:border-color .15s ease;
+}
+input.field:focus{outline:none; border-color:var(--orange);}
+.btn-confirm{
+  background:linear-gradient(120deg, var(--orange), #c95f1c); color:#fff; padding:17px; width:100%;
+  border:none; border-radius:12px; margin-top:8px; font-weight:700; font-size:15px; cursor:pointer;
+  box-shadow:0 12px 26px rgba(226,116,42,.35); transition:transform .15s ease;
+}
+.btn-confirm:hover:not(:disabled){transform:translateY(-2px);}
+.btn-confirm:disabled{opacity:.45; cursor:not-allowed; box-shadow:none;}
+.wait-hint{font-size:12px; color:#8a7256; margin-top:10px; text-align:center;}
+
+/* ---------- modal ---------- */
+.modal{position:fixed; inset:0; background:rgba(40,20,10,.7); display:none; align-items:center; justify-content:center; z-index:600; padding:20px;}
+.modal-content{background:#fff; padding:26px; border-radius:18px; width:100%; max-width:380px; box-shadow:0 20px 50px rgba(0,0,0,.35);}
+.modal-content h3{color:var(--clay-dark); border-bottom:1px solid #eee; padding-bottom:12px; font-size:19px;}
+.modal-content label{font-weight:600; font-size:13px; color:var(--brown);}
+.modal-content select{width:100%; padding:12px; margin-top:6px; border-radius:9px; border:1.5px solid #e3d8c2; font-family:'Poppins'; font-size:13.5px;}
+.btn-add{width:100%; padding:15px; font-size:15px; background:var(--brown-deep); color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:10px;}
+.btn-cancel{width:100%; padding:10px; margin-top:8px; background:transparent; border:none; color:#999; font-weight:600; cursor:pointer;}
+
+/* ---------- order summary on confirm screen ---------- */
+.order-summary{
+  background:var(--paper); border-radius:16px; padding:18px; margin-top:16px;
+  box-shadow:0 8px 20px rgba(74,44,23,.08); border:1px solid rgba(74,44,23,.06);
+  text-align:left;
+}
+.order-summary h4{
+  color:var(--clay-dark); font-size:15px; font-weight:700; margin-bottom:12px;
+  padding-bottom:8px; border-bottom:1.5px dashed var(--gold);
+}
+.order-summary .sitem{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px dashed #f0e8d8; font-size:13.5px;
+}
+.order-summary .sitem:last-child{border-bottom:none;}
+.order-summary .sitem .sname{color:var(--ink); font-weight:500; flex:1;}
+.order-summary .sitem .sqty{
+  color:var(--clay); font-weight:700; font-size:12px;
+  background:var(--cream-soft); padding:3px 8px; border-radius:6px; margin:0 8px;
+}
+.order-summary .sitem .sprice{color:var(--orange); font-weight:700;}
+.order-summary .stotal{
+  display:flex; justify-content:space-between; margin-top:10px;
+  font-weight:700; font-size:15px; color:var(--leaf); padding-top:10px;
+  border-top:2px solid var(--gold);
+}
+
+/* ---------- confirmation screen ---------- */
+.confirm-screen{text-align:center; padding:64px 22px; max-width:480px; margin:0 auto;}
+.confirm-screen .hands{font-size:48px; filter:drop-shadow(0 6px 14px rgba(74,44,23,.2));}
+.confirm-screen h2{color:var(--leaf); font-size:27px; margin-top:8px;}
+.confirm-screen .thanks{color:var(--brown); font-size:14.5px; margin-top:8px;}
+.token-box{
+  font-size:60px; color:var(--orange); margin:24px auto; border:3px dashed var(--orange);
+  display:inline-block; padding:18px 42px; border-radius:20px; font-weight:800; font-family:'Cormorant Garamond',serif;
+  background:#fff8ef;
+}
+.queue-card{
+  background:var(--paper); border-radius:16px; padding:20px; margin-top:20px;
+  box-shadow:0 10px 26px rgba(74,44,23,.1); border:1px solid rgba(74,44,23,.06);
+}
+.queue-card .row{display:flex; justify-content:space-between; font-size:13.5px; color:var(--brown); padding:7px 0;}
+.status-badge{
+  display:inline-block; padding:9px 22px; border-radius:30px; font-weight:700; font-size:14px; margin-top:15px;
+}
+.status-badge.Pending{background:#fdecd2; color:#a8650c;}
+.status-badge.Preparing{background:#f1dfc0; color:var(--clay-dark);}
+.status-badge.Ready{background:#dcf3df; color:#1d7a30;}
+.wait-msg{color:#8a7256; font-size:13px; margin-top:16px; line-height:1.6;}
+</style>
 </head>
 <body>
 
-    <div id="welcome-screen">
-        <div style="font-size: 4em; margin-bottom: 10px;">🙏</div>
-        <h2 style="font-weight: 400; margin: 0; letter-spacing: 1px;">Welcome to</h2>
-        <h1 class="logo">NS JUICE</h1>
-        <p style="color: var(--gold); font-weight: 500; letter-spacing: 1px;">Premium Freshness Delivered.</p>
+<!-- WELCOME OVERLAY -->
+<div class="overlay" id="welcomeOverlay">
+  <div class="hands">🙏</div>
+  <h1>Welcome to NS Juice</h1>
+  <p>Fresh juices, shakes &amp; snacks — made with 100% natural ingredients &amp; love, just for you.</p>
+  <div class="timing-chip">🕙 Open Daily: 10:00 AM – 10:00 PM</div>
+  <button id="startOrderBtn">Start Your Order</button>
+</div>
+
+<!-- CLOSED OVERLAY -->
+<div class="overlay closed" id="closedOverlay" style="display:none;">
+  <div class="hands">🌙</div>
+  <h1>We're Closed Right Now</h1>
+  <p>NS Juice is open daily from <strong>10:00 AM to 10:00 PM</strong>. Please come back during our working hours — we'd love to serve you fresh!</p>
+  <div class="clock-big" id="liveClockClosed">--:--</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">NS Juice</div>
+  <div class="sub">FRESH • NATURAL • DAILY</div>
+  <div class="status-bar">
+    <span class="status-pill" id="openStatusPill">● Checking...</span>
+    <span class="status-pill time" id="liveClockPill">--:--</span>
+  </div>
+</header>
+
+<!-- MENU -->
+<div id="menu-area"></div>
+
+<!-- CART -->
+<div class="cart-section">
+  <h3>🛒 Your Order</h3>
+  <div id="cart-items" style="margin:10px 0; font-size:13.5px; color:#8a7256;">No items selected yet.</div>
+  <div class="cart-total">Total: ₹<span id="cart-total">0</span></div>
+
+  <div class="payment-section">
+    <h4>💳 Select Payment Method</h4>
+    <div class="pay-options">
+      <button type="button" class="pay-btn" data-method="GPay" onclick="selectPayment('GPay')">
+        <span class="pay-icon">📲</span>Google Pay
+      </button>
+      <button type="button" class="pay-btn" data-method="Paytm" onclick="selectPayment('Paytm')">
+        <span class="pay-icon">💠</span>Paytm
+      </button>
+      <button type="button" class="pay-btn" data-method="Cash" onclick="selectPayment('Cash')">
+        <span class="pay-icon">💵</span>Cash
+      </button>
+    </div>
+    <div class="pay-note">Pay at the counter using your selected method when collecting your order.</div>
+  </div>
+
+  <input type="text" id="custName" class="field" placeholder="Your Name">
+  <input type="tel" id="custPhone" class="field" placeholder="WhatsApp Number (10-digit, e.g. 9876543210)">
+  <button class="btn-confirm" id="placeOrderBtn" disabled>SELECT PAYMENT METHOD FIRST</button>
+  <div class="wait-hint">⏱️ Orders typically ready in 10–15 minutes</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="prefModal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <div style="margin:14px 0;">
+      <label>Ice Preference</label>
+      <select id="prefIce">
+        <option value="Regular Ice">Regular Ice</option>
+        <option value="No Ice">No Ice</option>
+        <option value="Extra Ice">Extra Ice</option>
+      </select>
+    </div>
+    <div style="margin:14px 0;">
+      <label>Add-ons / Sugar / Salt</label>
+      <select id="prefExtra">
+        <option value="Regular">Regular</option>
+        <option value="No Sugar">No Sugar</option>
+        <option value="Less Sugar">Less Sugar</option>
+        <option value="No Salt">No Salt</option>
+        <option value="Extra Salt">Extra Salt</option>
+        <option value="Add Ice Cream">Add Ice Cream</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="saveItem()">Add to Order</button>
+    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- CONFIRMATION SCREEN (hidden, injected after order) -->
+<div class="confirm-screen" id="confirmScreen" style="display:none;"></div>
+
+<script>
+/* ================== OPENING HOURS ================== */
+const OPEN_HOUR = 10;   // 10 AM
+const CLOSE_HOUR = 22;  // 10 PM
+
+function isOpenNow(){
+  const h = new Date().getHours();
+  return h >= OPEN_HOUR && h < CLOSE_HOUR;
+}
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+}
+function fmtTime(d){
+  let h = d.getHours(), m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if(h===0) h = 12;
+  return h + ":" + String(m).padStart(2,'0') + " " + ampm;
+}
+
+function tickClock(){
+  const now = new Date();
+  const t = fmtTime(now);
+  const pill = document.getElementById('liveClockPill');
+  if(pill) pill.textContent = "🕐 " + t;
+  const closedClock = document.getElementById('liveClockClosed');
+  if(closedClock) closedClock.textContent = t;
+
+  const openPill = document.getElementById('openStatusPill');
+  if(isOpenNow()){
+    openPill.textContent = "🟢 Open Now";
+    openPill.className = "status-pill open";
+  } else {
+    openPill.textContent = "🔴 Closed";
+    openPill.className = "status-pill closed-pill";
+  }
+}
+setInterval(tickClock, 1000 * 30);
+tickClock();
+
+function gateAccess(){
+  if(!isOpenNow()){
+    document.getElementById('welcomeOverlay').style.display = 'none';
+    document.getElementById('closedOverlay').style.display = 'flex';
+  }
+}
+gateAccess();
+
+document.getElementById('startOrderBtn').addEventListener('click', () => {
+  document.getElementById('welcomeOverlay').style.display = 'none';
+});
+
+/* ================== MENU DATA ================== */
+const menu = [
+  // FRUIT JUICES
+  { cat:"🍊 Fruit Juices", name:"Mousambi Juice",        img:"images/mousambi-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Orange Juice",           img:"images/orange-juice.jpg",             s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Mix Fruit Juice",        img:"images/mix-fruit-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Pineapple Juice",        img:"images/pineapple-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Watermelon Juice",       img:"images/watermelon-juice.jpg",         s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Sweet Lime Juice",       img:"",                                    s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Ash Gourd (Petha Fruit)",img:"images/ash-gourd.jpg",                s:30, m:40, l:50 },
+  { cat:"🍊 Fruit Juices", name:"Pomegranate Juice",      img:"images/pomegranate-juice.jpg",        s:40, m:50, l:60 },
+
+  // VEGETABLE JUICES
+  { cat:"🥕 Vegetable Juices", name:"Mix Vegetable Juice",        img:"images/mix-fruit-juice.jpg",  s:40, m:50, l:60 },
+  { cat:"🥕 Vegetable Juices", name:"Gajar (Carrot) Juice",       img:"",                            s:30, m:40, l:50 },
+  { cat:"🥕 Vegetable Juices", name:"ABC Juice",                  img:"images/apple.jpg",            s:40, m:50, l:60 },
+  { cat:"🥕 Vegetable Juices", name:"Chukandar (Beetroot) Juice", img:"",                            s:50, m:60, l:70 },
+
+  // NATURAL SHAKES
+  { cat:"🥤 Natural Shakes", name:"Banana",                  img:"images/banana.jpg",                   s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Banana Chocolate Shake",  img:"images/banana-choco-shake.jpg",       s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Banana Peanut Shake",     img:"images/banana-peanut-shake.jpg",      s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Mango",                   img:"images/mango.jpg",                    s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Mango Butter Scotch Shake",img:"images/mango-butterscotch-shake.jpg",s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Papaya",                  img:"images/papaya.jpg",                   s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Mix Fruit Shake",         img:"images/mix-fruit-shake.jpg",          s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Cheeku",                  img:"images/cheeku.jpg",                   s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Coconut Shake",           img:"images/coconut-shake.jpg",            s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Fruit Cream Shake",       img:"images/fruit-cream-shake.jpg",        s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Apple",                   img:"images/apple.jpg",                    s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Shake",            img:"images/khajur-shake.jpg",             s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Peanut Shake",     img:"images/khajur-peanut-shake.jpg",      s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Banana Peanut",    img:"images/khajur-banana-peanut.jpg",     s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Chocolate Shake",         img:"images/chocolate-shake.jpg",          s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Oreo Shake",              img:"images/oreo-shake.jpg",               s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Kit-Kat Shake",           img:"images/kitkat-shake.jpg",             s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Cold Coffee",             img:"images/cold-coffee.jpg",              s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Vanilla",                 img:"images/vanilla.jpg",                  s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Strawberry Shake",        img:"images/strawberry-shake.jpg",         s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Dry Fruit Milk",          img:"images/dry-fruit-milk.jpg",           s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Protein Shake",           img:"images/protein-shake.jpg",            s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Butterscotch Milk",       img:"images/butterscotch-milk.jpg",        s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Black Currant Milk",      img:"images/black-currant-milk.jpg",       s:50, m:60, l:70 },
+
+  // SNACKS
+  { cat:"🍴 Snacks Menu", name:"Chai",                price:20, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Hot Coffee",          price:30, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Aloo)",      price:15, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Paneer)",    price:20, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Veg Grill Sandwich",  price:50, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Healthy Sandwich",    price:60, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Bun Maska",           price:30, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Hot Chocolate",       price:40, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Kulhad Lassi",        price:40, img:"" },
+];
+
+let cart = [];
+let total = 0;
+let currentItem = {};
+refreshPlaceOrderButton();
+
+const area = document.getElementById('menu-area');
+let currentCategory = "";
+menu.forEach(i => {
+  if(currentCategory !== i.cat){
+    area.innerHTML += `<div class="category-title">${i.cat}</div>`;
+    currentCategory = i.cat;
+  }
+  const imgHTML = i.img
+    ? `<div class="item-icon"><img src="${i.img}" alt="${i.name}" loading="lazy" onerror="this.style.display='none'"></div>`
+    : `<div class="item-icon item-icon-empty">🥤</div>`;
+
+  let buttonsHTML = "";
+  if(i.price){
+    buttonsHTML = `<button class="btn-size" onclick="openModal('${i.name}', ${i.price})">₹${i.price}</button>`;
+  } else {
+    buttonsHTML = `<div class="size-group">`;
+    if(i.s) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S ₹${i.s}</button>`;
+    if(i.m) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M ₹${i.m}</button>`;
+    if(i.l) buttonsHTML += `<button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L ₹${i.l}</button>`;
+    buttonsHTML += `</div>`;
+  }
+  area.innerHTML += `<div class="item-row"><div class="item-left">${imgHTML}<span class="name">${i.name}</span></div>${buttonsHTML}</div>`;
+});
+
+function openModal(name, price){
+  if(!isOpenNow()){ alert("We're currently closed. Please order between 10 AM – 10 PM."); return; }
+  currentItem = {name, price};
+  document.getElementById('modalTitle').innerText = name + " — ₹" + price;
+  document.getElementById('prefModal').style.display = 'flex';
+}
+function closeModal(){ document.getElementById('prefModal').style.display = 'none'; }
+
+function saveItem(){
+  let ice = document.getElementById('prefIce').value;
+  let extra = document.getElementById('prefExtra').value;
+  let parts = [];
+  if(ice !== "Regular Ice") parts.push(ice);
+  if(extra !== "Regular") parts.push(extra);
+  let remark = parts.length ? "(" + parts.join(", ") + ")" : "";
+
+  // merge with existing identical item (same name + price + remark)
+  const existing = cart.find(it => it.name === currentItem.name && it.price === currentItem.price && it.remark === remark);
+  if(existing){
+    existing.qty += 1;
+  } else {
+    cart.push({name: currentItem.name, price: currentItem.price, remark, qty: 1});
+  }
+  recalcTotal();
+  updateCartDisplay();
+  closeModal();
+  document.getElementById('prefIce').value = "Regular Ice";
+  document.getElementById('prefExtra').value = "Regular";
+}
+
+function recalcTotal(){
+  total = cart.reduce((sum, it) => sum + (it.price * it.qty), 0);
+}
+
+function increaseQty(index){
+  cart[index].qty += 1;
+  recalcTotal();
+  updateCartDisplay();
+}
+
+function decreaseQty(index){
+  cart[index].qty -= 1;
+  if(cart[index].qty <= 0){
+    cart.splice(index, 1);
+  }
+  recalcTotal();
+  updateCartDisplay();
+}
+
+function removeItem(index){
+  cart.splice(index, 1);
+  recalcTotal();
+  updateCartDisplay();
+}
+
+function updateCartDisplay(){
+  const cartDiv = document.getElementById('cart-items');
+  if(cart.length === 0){
+    cartDiv.innerHTML = "No items selected yet.";
+  } else {
+    cartDiv.innerHTML = cart.map((item, idx) => `
+      <div class="cart-item">
+        <div><strong>${item.name}</strong><br><span style="font-size:12px; color:var(--orange); font-weight:600;">${item.remark}</span></div>
+        <div class="qty-stepper">
+          <span style="font-size:13px; color:#555; margin-right:4px;">₹${item.price * item.qty}</span>
+          <button onclick="decreaseQty(${idx})">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button onclick="increaseQty(${idx})">+</button>
+          <button class="remove-btn" onclick="removeItem(${idx})">✕</button>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('cart-total').innerText = total;
+  refreshPlaceOrderButton();
+}
+
+/* ================== PAYMENT METHOD ================== */
+let selectedPayment = null;
+
+function selectPayment(method){
+  selectedPayment = method;
+  document.querySelectorAll('.pay-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.method === method);
+  });
+  refreshPlaceOrderButton();
+}
+
+function refreshPlaceOrderButton(){
+  const btn = document.getElementById('placeOrderBtn');
+  if(cart.length === 0){
+    btn.disabled = true;
+    btn.textContent = "ADD ITEMS TO YOUR ORDER";
+  } else if(!selectedPayment){
+    btn.disabled = true;
+    btn.textContent = "SELECT PAYMENT METHOD FIRST";
+  } else {
+    btn.disabled = false;
+    btn.textContent = "CONFIRM & PLACE ORDER (" + selectedPayment + ")";
+  }
+}
+
+/* ================== FIREBASE INIT (safe) ================== */
+let db = null;
+let firebaseReady = false;
+
+function initFirebase(){
+  try {
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
+      authDomain: "nsjuice-07.firebaseapp.com",
+      databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
+      projectId: "nsjuice-07",
+      storageBucket: "nsjuice-07.firebasestorage.app",
+      messagingSenderId: "741674109700",
+      appId: "1:741674109700:web:0ea165b3567f829c805e51"
+    };
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+  } catch(err){
+    console.error("Firebase failed to load:", err);
+    firebaseReady = false;
+  }
+}
+initFirebase();
+
+/* ================== PLACE ORDER ================== */
+document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+
+function placeOrder(){
+  if(!isOpenNow()){ alert("We're currently closed. Please order between 10 AM – 10 PM."); return; }
+  if(!firebaseReady || !db){
+    alert("We're having a connection issue right now. Please check your internet and try again, or refresh the page.");
+    return;
+  }
+
+  const name = document.getElementById('custName').value.trim();
+  const phoneRaw = document.getElementById('custPhone').value.trim();
+  const phone = phoneRaw.replace(/\D/g,'');
+
+  if(!name || cart.length === 0){
+    alert("Please enter your name and add items to your order!");
+    return;
+  }
+  if(phone.length !== 10){
+    alert("Please enter a valid 10-digit WhatsApp number so we can notify you.");
+    return;
+  }
+  if(!selectedPayment){
+    alert("Please select a payment method (Google Pay, Paytm, or Cash) before placing your order.");
+    return;
+  }
+
+  const date = todayKey();
+  const combinedRemarks = cart.filter(i => i.remark).map(i => i.name + " x" + i.qty + ": " + i.remark).join(" | ");
+
+  db.ref('order_counter/' + date).transaction(c => (c || 0) + 1, (err, committed, snap) => {
+    if(committed){
+      const orderNumber = snap.val();
+      const orderRef = db.ref('orders/' + date).push();
+      const orderData = {
+        orderNumber: orderNumber,
+        customer: name,
+        phone: "91" + phone,
+        items: cart,
+        totalAmount: total,
+        remarks: combinedRemarks,
+        paymentMethod: selectedPayment,
+        status: "Pending",
+        placedAt: Date.now()
+      };
+      orderRef.set(orderData).then(() => {
+        showConfirmation(date, orderRef.key, orderNumber);
+      });
+    }
+  });
+}
+
+/* ================== CONFIRMATION + LIVE STATUS ================== */
+function showConfirmation(date, orderKey, orderNumber){
+  document.querySelectorAll('header, #menu-area, .cart-section').forEach(el => el.style.display = 'none');
+  const screen = document.getElementById('confirmScreen');
+  screen.style.display = 'block';
+
+  // Build items list HTML from cart
+  const itemsHTML = cart.map(item => `
+    <div class="sitem">
+      <span class="sname">${item.name}${item.remark ? ' <span style="font-size:11px;color:var(--orange);">' + item.remark + '</span>' : ''}</span>
+      <span class="sqty">x${item.qty}</span>
+      <span class="sprice">₹${item.price * item.qty}</span>
+    </div>`).join('');
+
+  screen.innerHTML = `
+    <div class="hands">🙏</div>
+    <h2>Thank You for Visiting NS Juice!</h2>
+    <p class="thanks">Your order has been received and our team has started working on it.</p>
+    <div class="token-box">#${orderNumber}</div>
+
+    <div class="order-summary">
+      <h4>🧾 Your Order</h4>
+      ${itemsHTML}
+      <div class="stotal"><span>Total</span><span>₹${total}</span></div>
     </div>
 
-    <div id="main-screen">
-        <div class="header">
-            <h1>NS JUICE</h1>
-            <div class="timing-badge">🕒 Open and Clossing time: 10:00 AM - 10:00 PM @Every Day</div>
-        </div>
-
-        <div id="menu-area"></div>
-
-        <div class="cart-section">
-            <h2 style="margin-top: 0; color: var(--clay); font-family: 'Cormorant Garamond', serif; font-size: 2em; border-bottom: 1px solid #eee; padding-bottom: 10px;">🛒 Your Cart</h2>
-            <div id="cart-items" style="margin: 15px 0; color: #555;">No items selected yet.</div>
-            <h2 style="text-align: right; color: var(--orange); padding-top: 10px;">Total: ₹<span id="cart-total">0</span></h2>
-            
-            <input type="text" id="custName" class="input-field" placeholder="Enter Your Name / Table No.">
-            
-            <h3 style="color: var(--clay); margin-bottom: 5px; font-size: 1.1em;">Payment Preference</h3>
-            <div class="payment-options">
-                <label><input type="radio" name="payMethod" value="Pay Online at Counter" onchange="enableOrder()"> 📱 QR at Counter</label>
-                <label><input type="radio" name="payMethod" value="Cash" onchange="enableOrder()"> 💵 Cash</label>
-            </div>
-
-            <button id="place-btn" class="btn-confirm" onclick="placeOrder()">Select Payment to Proceed</button>
-        </div>
+    <div class="queue-card" style="margin-top:14px;">
+      <div class="row"><span>Payment Method</span><span>${selectedPayment}</span></div>
+      <div class="row"><span>Current Status</span><span id="liveStatusText">Pending</span></div>
+      <div class="row"><span>Orders Ahead of You</span><span id="queuePosition">—</span></div>
+      <div style="text-align:center;"><span class="status-badge Pending" id="statusBadge">⏳ Pending</span></div>
     </div>
+    <div class="wait-msg" id="waitMsg">⏱️ Estimated wait: 10–15 minutes. We'll notify you on WhatsApp at every step!</div>
+  `;
 
-    <div id="live-dashboard">
-        <h2 style="color: var(--clay); font-family: 'Cormorant Garamond', serif; font-size: 2.2em; margin-bottom: 5px;">Thank you! 🙏</h2>
-        <p style="color: #666; font-weight: 500;">Your Order Number is</p>
-        <div class="order-number" id="display-order-num">#--</div>
-        
-        <div class="status-box">
-            <h3 id="display-status" style="color: var(--orange); font-size: 1.4em;">Waiting for Cafe to Accept...</h3>
-            <p id="queue-status" style="color: var(--clay); font-weight: 600; font-size: 1.1em; margin: 15px 0;">Checking queue...</p>
-            <div style="background: var(--cream); padding: 12px; border-radius: 8px; border: 1px dashed var(--gold);">
-                <p style="color: var(--text-dark); font-size: 0.95em; margin: 0; font-weight: 500;">⏳ Estimated Wait Time: <b style="color: var(--orange);">10-15 Minutes</b></p>
-            </div>
-        </div>
-    </div>
+  // Live listen to this order's status
+  db.ref('orders/' + date + '/' + orderKey).on('value', snap => {
+    const data = snap.val();
+    if(!data) return;
+    const badge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('liveStatusText');
+    const waitMsg = document.getElementById('waitMsg');
+    badge.className = "status-badge " + data.status;
+    statusText.textContent = data.status;
+    if(data.status === 'Pending'){
+      badge.innerHTML = "⏳ Pending";
+      waitMsg.textContent = "⏱️ Estimated wait: 10–15 minutes. We'll notify you on WhatsApp at every step!";
+    } else if(data.status === 'Preparing'){
+      badge.innerHTML = "👨‍🍳 Preparing";
+      waitMsg.textContent = "Our team is preparing your order right now. Almost there!";
+    } else if(data.status === 'Ready'){
+      badge.innerHTML = "✅ Ready for Collection";
+      waitMsg.textContent = "Your order is ready! Please collect it from the counter. Enjoy! 🥤";
+    }
+  });
 
-    <div class="modal" id="prefModal">
-        <div class="modal-content">
-            <h3 id="modalTitle" style="color: var(--clay); border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-top: 0;"></h3>
-            
-            <div style="margin: 15px 0;">
-                <label style="font-weight: 600; font-size: 0.9em; color: #555;">Ice Preference:</label>
-                <select id="prefIce" class="input-field" style="margin-top: 5px; padding: 12px;">
-                    <option>Regular Ice</option><option>No Ice</option><option>Extra Ice</option>
-                </select>
-            </div>
-            
-            <div style="margin: 15px 0;">
-                <label style="font-weight: 600; font-size: 0.9em; color: #555;">Special Instructions (Optional):</label>
-                <select id="prefExtra" class="input-field" style="margin-top: 5px; padding: 12px;">
-                    <option>Regular</option><option>No Sugar</option><option>Less Sugar</option><option>No Salt</option><option>Extra Salt</option>
-                </select>
-            </div>
-            
-            <button class="btn-size" style="width: 100%; padding: 15px; font-size: 1.1em; margin-top: 10px;" onclick="saveItem()">Add to Cart</button>
-            <button onclick="document.getElementById('prefModal').style.display='none'" style="width: 100%; padding: 12px; margin-top: 10px; background: #eee; border: none; color: #555; border-radius: 6px; font-weight: 600; cursor: pointer;">Cancel</button>
-        </div>
-    </div>
-
-    <script>
-        // Smooth Welcome Screen Fade Out
-        setTimeout(() => {
-            let ws = document.getElementById('welcome-screen');
-            ws.style.opacity = '0';
-            setTimeout(() => { ws.style.display = 'none'; }, 600);
-        }, 2500);
-
-        // FIREBASE CONFIG (Aapki Master Keys)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLcGnxBbKRXP2lasOUVYL11QGog86iTBU",
-            authDomain: "nsjuice-07.firebaseapp.com",
-            databaseURL: "https://nsjuice-07-default-rtdb.firebaseio.com",
-            projectId: "nsjuice-07",
-            storageBucket: "nsjuice-07.firebasestorage.app",
-            messagingSenderId: "741674109700",
-            appId: "1:741674109700:web:0ea165b3567f829c805e51"
-        };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-
-        // NS JUICE MENU
-        const menu = [
-            // --- SNACKS MENU ---
-            { cat: "🍴 Snacks Menu", icon: "☕", img: "images/chai.jpg", name: "Chai", price: 20 },
-            { cat: "🍴 Snacks Menu", icon: "☕", img: "images/hot-coffee.jpg", name: "Hot Coffee", price: 30 },
-            { cat: "🍴 Snacks Menu", icon: "🥟", img: "images/patties-aloo.jpg", name: "Patties (Aloo)", price: 15 },
-            { cat: "🍴 Snacks Menu", icon: "🥟", img: "images/patties-paneer.jpg", name: "Patties (Paneer)", price: 20 },
-            { cat: "🍴 Snacks Menu", icon: "🥪", img: "images/veg-grill-sandwich.jpg", name: "Veg Grill Sandwich", price: 50 },
-            { cat: "🍴 Snacks Menu", icon: "🥪", img: "images/healthy-sandwich.jpg", name: "Healthy Sandwich", price: 60 },
-            { cat: "🍴 Snacks Menu", icon: "🍞", img: "images/bun-maska.jpg", name: "Bun Maska", price: 30 },
-            { cat: "🍴 Snacks Menu", icon: "🍫", img: "images/hot-chocolate.jpg", name: "Hot Chocolate", price: 40 },
-            { cat: "🍴 Snacks Menu", icon: "🥤", img: "images/kulhad-lassi.jpg", name: "Kulhad Lassi", price: 40 },
-// --- VEGETABLE JUICES ---
-            { cat: "🥕 Vegetable Juices", icon: "🥗", img: "images/mix-vegetable-juice.jpg", name: "Mix Vegetable Juice", s: 40, m: 50, l: 60 },
-            { cat: "🥕 Vegetable Juices", icon: "🥕", img: "images/gajar-carrot-juice.jpg", name: "Gajar (Carrot) Juice", s: 30, m: 40, l: 50 },
-            { cat: "🥕 Vegetable Juices", icon: "🍎", img: "images/abc-juice.jpg", name: "ABC Juice", s: 40, m: 50, l: 60 },
-            { cat: "🥕 Vegetable Juices", icon: "🍠", img: "images/chukandar-beetroot-juice.jpg", name: "Chukandar (Beetroot) Juice", s: 50, m: 60, l: 70 },
-            
-
-            // --- FRUIT JUICES ---
-{ cat: "🍊 Fruit Juices", icon: "🍈", img: "images/mousambi-juice.jpg", name: "Mousambi Juice", s: 40, m: 50, l: 60 },
-{ cat: "🍊 Fruit Juices", icon: "🍊", img: "images/orange-juice.jpg", name: "Orange Juice", s: 40, m: 50, l: 60 },
-{ cat: "🍊 Fruit Juices", icon: "🍇", img: "images/mix-fruit-juice.jpg", name: "Mix Fruit Juice", s: 40, m: 50, l: 60 },
-{ cat: "🍊 Fruit Juices", icon: "🍍", img: "images/pineapple-juice.jpg", name: "Pineapple Juice", s: 40, m: 50, l: 60 },
-{ cat: "🍊 Fruit Juices", icon: "🍉", img: "images/watermelon-juice.jpg", name: "Watermelon Juice", s: 40, m: 50, l: 60 },
-{ cat: "🍊 Fruit Juices", icon: "🍈", img: "images/ash-gourd.jpg", name: "Ash Gourd (Petha Fruit)", s: 30, m: 40, l: 50 },
-{ cat: "🍊 Fruit Juices", icon: "🍎", img: "images/pomegranate-juice.jpg", name: "Pomegranate Juice", s: 40, m: 50, l: 60 },
-
-// --- NATURAL SHAKES ---
-{ cat: "🥤 Natural Shakes", icon: "🍌", img: "images/banana.jpg", name: "Banana", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍫", img: "images/banana-choco-shake.jpg", name: "Banana Chocolate Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🥜", img: "images/banana-peanut-shake.jpg", name: "Banana Peanut Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🥭", img: "images/mango.jpg", name: "Mango", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍮", img: "images/mango-butterscotch-shake.jpg", name: "Mango Butter Scotch Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🍈", img: "images/papaya.jpg", name: "Papaya", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍓", img: "images/mix-fruit-shake.jpg", name: "Mix Fruit Shake", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍐", img: "images/cheeku.jpg", name: "Cheeku", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🥥", img: "images/coconut-shake.jpg", name: "Coconut Shake", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍦", img: "images/fruit-cream-shake.jpg", name: "Fruit Cream Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🍏", img: "images/apple.jpg", name: "Apple", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🌰", img: "images/khajur-shake.jpg", name: "Khajur Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🥜", img: "images/khajur-peanut-shake.jpg", name: "Khajur Peanut Shake", s: 60, m: 70, l: 80 },
-{ cat: "🥤 Natural Shakes", icon: "🍌", img: "images/khajur-banana-peanut.jpg", name: "Khajur Banana Peanut", s: 60, m: 70, l: 80 },
-{ cat: "🥤 Natural Shakes", icon: "🍫", img: "images/chocolate-shake.jpg", name: "Chocolate Shake", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍪", img: "images/oreo-shake.jpg", name: "Oreo Shake", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🍫", img: "images/kitkat-shake.jpg", name: "Kit-Kat Shake", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "☕", img: "images/cold-coffee.jpg", name: "Cold Coffee", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🤍", img: "images/vanilla.jpg", name: "Vanilla", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🍓", img: "images/strawberry-shake.jpg", name: "Strawberry Shake", s: 40, m: 50, l: 60 },
-{ cat: "🥤 Natural Shakes", icon: "🥛", img: "images/dry-fruit-milk.jpg", name: "Dry Fruit Milk", s: 60, m: 70, l: 80 },
-{ cat: "🥤 Natural Shakes", icon: "💪", img: "images/protein-shake.jpg", name: "Protein Shake", s: 60, m: 70, l: 80 },
-{ cat: "🥤 Natural Shakes", icon: "🍮", img: "images/butterscotch-milk.jpg", name: "Butterscotch Milk", s: 50, m: 60, l: 70 },
-{ cat: "🥤 Natural Shakes", icon: "🫐", img: "images/black-currant-milk.jpg", name: "Black Currant Milk", s: 50, m: 60, l: 70 }
-        ];
-
-        let cart = [], total = 0, currentItem = {}, myOrderKey = null, myOrderNum = 0;
-
-        // Render Menu
-        const area = document.getElementById('menu-area');
-        let currentCategory = "";
-        let gridDiv = null;
-        menu.forEach(i => {
-            if(currentCategory !== i.cat) {
-                area.innerHTML += `<div class="category-title">${i.cat}</div><div class="menu-grid" id="grid-${menu.indexOf(i)}"></div>`;
-                currentCategory = i.cat;
-                gridDiv = document.getElementById(`grid-${menu.indexOf(i)}`);
-            }
-            const photo = i.img ?
-                `<img src="${i.img}" alt="${i.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'item-icon-fallback\\'>${i.icon || '🥤'}</span>'">` :
-                `<span class="item-icon-fallback">${i.icon || '🥤'}</span>`;
-
-            let priceArea = i.price ?
-                `<div class="item-price-row"><span class="item-price">₹${i.price}</span><button class="btn-add" onclick="openModal('${i.name}', ${i.price})">Add</button></div>` :
-                `<div class="size-row">
-                 <button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S ₹${i.s}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M ₹${i.m}</button>
-                 <button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L ₹${i.l}</button>
-                 </div>`;
-
-            gridDiv.innerHTML += `<div class="item-card">
-                <div class="item-photo-wrap">${photo}</div>
-                <div class="item-info">
-                    <span class="item-name">${i.name}</span>
-                    ${priceArea}
-                </div>
-            </div>`;
-        });
-
-        // Cart & Modal Logic
-        function openModal(name, price) {
-            currentItem = {name, price};
-            document.getElementById('modalTitle').innerText = name + " - ₹" + price;
-            document.getElementById('prefIce').value = "Regular Ice";
-            document.getElementById('prefExtra').value = "Regular";
-            document.getElementById('prefModal').style.display = 'flex';
-        }
-
-        function saveItem() {
-            let ice = document.getElementById('prefIce').value;
-            let extra = document.getElementById('prefExtra').value;
-            let remark = (ice !== "Regular Ice" || extra !== "Regular") ? `(${ice}, ${extra})` : "";
-            
-            cart.push({name: currentItem.name, price: currentItem.price, remark: remark});
-            total += currentItem.price;
-            updateCart();
-            document.getElementById('prefModal').style.display = 'none';
-        }
-
-        function removeItem(idx) {
-            total -= cart[idx].price;
-            cart.splice(idx, 1);
-            updateCart();
-        }
-
-        function updateCart() {
-            let cDiv = document.getElementById('cart-items');
-            cDiv.innerHTML = cart.length === 0 ? "No items selected." : cart.map((i, idx) => 
-                `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #ddd; align-items:center;">
-                    <span><b style="color:var(--text-dark)">${i.name}</b> <br><span style="font-size:0.85em; color:var(--orange); font-weight:600;">${i.remark}</span></span>
-                    <span style="font-weight:600;">₹${i.price} <button onclick="removeItem(${idx})" style="background:#e74c3c; color:white; border:none; padding:4px 10px; border-radius:4px; margin-left:10px; cursor:pointer;">✕</button></span>
-                </div>`).join('');
-            document.getElementById('cart-total').innerText = total;
-            
-            if(cart.length === 0) {
-                let btn = document.getElementById('place-btn');
-                btn.innerText = "Select Payment to Proceed";
-                btn.classList.remove('active');
-            }
-        }
-
-        function enableOrder() {
-            if(cart.length > 0) {
-                let btn = document.getElementById('place-btn');
-                btn.innerText = "PLACE ORDER NOW";
-                btn.classList.add('active');
-            }
-        }
-
-        // Order Placement & Smart Token Logic
-        function getTodayDate() { return new Date().toLocaleDateString('en-GB'); }
-
-        function placeOrder() {
-            let name = document.getElementById('custName').value;
-            let payMethodInput = document.querySelector('input[name="payMethod"]:checked');
-            
-            if(!name || cart.length === 0) { alert("Please enter your name and add items to the cart!"); return; }
-            if(!payMethodInput) { alert("Please select a payment method!"); return; }
-
-            let pMethod = payMethodInput.value;
-            let today = getTodayDate();
-
-            db.ref('live_orders').once('value').then((snap) => {
-                let orders = snap.val();
-                let activeExist = false;
-                let maxToken = 0;
-
-                if(orders) {
-                    Object.values(orders).forEach(o => {
-                        if(o.date === today) {
-                            if(o.status === 'Preparing') {
-                                if(o.orderNumber > maxToken) maxToken = o.orderNumber;
-                                activeExist = true;
-                            }
-                        }
-                    });
-                }
-
-                // If no pending/preparing orders exist today, token restarts at 1
-                let tokenNo = activeExist ? (maxToken + 1) : 1;
-                
-                saveOrderToFirebase(name, pMethod, tokenNo, today);
-            }).catch((error) => {
-                alert("Network error, please try again.");
-                console.error(error);
-            });
-        }
-
-        function saveOrderToFirebase(name, pMethod, tokenNo, today) {
-            myOrderNum = tokenNo;
-            let combinedRemarks = cart.filter(i => i.remark).map(i => i.name + ": " + i.remark).join(" | ");
-            
-            let newOrder = db.ref('live_orders').push();
-            myOrderKey = newOrder.key;
-            
-            newOrder.set({
-                orderNumber: tokenNo,
-                date: today,
-                customer: name,
-                payment: pMethod,
-                items: cart,
-                totalAmount: total,
-                remarks: combinedRemarks,
-                status: "Pending",
-                placedAt: Date.now()
-            }).then(() => {
-                document.getElementById('main-screen').style.display = 'none';
-                document.getElementById('live-dashboard').style.display = 'block';
-                document.getElementById('display-order-num').innerText = "#" + tokenNo;
-                trackLiveOrder(today);
-            }).catch((error) => {
-                alert("Order failed to place. Please check your internet connection.");
-                console.error(error);
-            });
-        }
-
-        // Live Tracking & Queue Position
-        function trackLiveOrder(todayDate) {
-            db.ref('live_orders/' + myOrderKey).on('value', snap => {
-                if(!snap.exists()) return;
-                let status = snap.val().status;
-                let statDiv = document.getElementById('display-status');
-                
-                if(status === 'Pending') statDiv.innerText = "Waiting for Cafe to Accept...";
-                if(status === 'Preparing') { statDiv.innerText = "👨‍🍳 Preparing Your Order..."; statDiv.style.color = "var(--clay)"; }
-                if(status === 'Ready') { 
-                    statDiv.innerText = "✅ ORDER IS READY!"; 
-                    statDiv.style.color = "#25D366"; 
-                    document.getElementById('queue-status').innerText = "Please collect from the counter."; 
-                }
-            });
-
-            db.ref('live_orders').orderByChild('date').equalTo(todayDate).on('value', snap => {
-                let orders = snap.val();
-                let queueCount = 0;
-                if(orders) {
-                    Object.values(orders).forEach(o => {
-                        if(o.orderNumber < myOrderNum && (o.status === 'Pending' || o.status === 'Preparing')) {
-                            queueCount++;
-                        }
-                    });
-                }
-                
-                let myStatus = document.getElementById('display-status').innerText;
-                if(myStatus !== "✅ ORDER IS READY!") {
-                    document.getElementById('queue-status').innerText = queueCount > 0 ? 
-                        `Orders ahead of you: ${queueCount}` : 
-                        "You are next in line! 🎉";
-                }
-            });
-        }
-    </script>
+  // Live queue position: count Pending/Preparing orders with lower order number
+  db.ref('orders/' + date).on('value', snap => {
+    const all = snap.val();
+    if(!all) return;
+    let ahead = 0;
+    Object.values(all).forEach(o => {
+      if((o.status === 'Pending' || o.status === 'Preparing') && o.orderNumber < orderNumber){
+        ahead++;
+      }
+    });
+    document.getElementById('queuePosition').textContent = ahead;
+  });
+}
+</script>
 </body>
 </html>
