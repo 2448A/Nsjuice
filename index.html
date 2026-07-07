@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#221008">
 <title>NS Juice — Order Now</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,11 +18,14 @@
 *{box-sizing:border-box; margin:0; padding:0;}
 body{
   font-family:'Poppins',sans-serif; color:var(--ink); padding-bottom:50px;
-  max-width:600px; margin:0 auto; width:100%;
+  width:100%; margin:0 auto;
   background:
     radial-gradient(ellipse 600px 360px at 90% 0%, rgba(201,162,39,.10), transparent 60%),
     radial-gradient(ellipse 500px 420px at 0% 30%, rgba(94,122,61,.08), transparent 60%),
     var(--cream);
+}
+@media (min-width:640px){
+  body{ max-width:600px; }
 }
 h1,h2,h3{font-family:'Cormorant Garamond',serif;}
 
