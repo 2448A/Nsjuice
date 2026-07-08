@@ -85,6 +85,53 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
 
 /* ---------- menu ---------- */
 /* ---------- category + GRID menu ---------- */
+.order-again-box{
+  background:linear-gradient(120deg, rgba(226,116,42,.14), rgba(201,162,39,.14));
+  border:1.5px dashed var(--orange); border-radius:12px; padding:12px 14px; margin:10px 0; font-size:13px;
+}
+.order-again-box button{
+  width:100%; margin-top:8px; padding:10px; border:none; border-radius:9px; background:var(--orange);
+  color:#fff; font-weight:700; font-size:13.5px; cursor:pointer;
+}
+.footer-links{ display:flex; flex-direction:column; gap:9px; margin-top:16px; }
+.footer-link{
+  display:block; text-align:center; padding:11px; border-radius:10px; text-decoration:none;
+  font-weight:700; font-size:13.5px; transition:opacity .15s ease;
+}
+.footer-link.whatsapp{ background:#25D366; color:#fff; }
+.footer-link.insta{ background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
+.footer-link:hover{ opacity:.9; }
+.progress-bar{ display:flex; align-items:center; justify-content:space-between; margin:16px 0; }
+.progress-step{ flex:1; text-align:center; position:relative; }
+.progress-step .dot{
+  width:34px; height:34px; border-radius:50%; background:#3a3025; color:#888; display:flex;
+  align-items:center; justify-content:center; font-size:16px; margin:0 auto 6px; transition:background .3s ease, color .3s ease;
+}
+.progress-step .lbl{ font-size:10.5px; color:#888; text-transform:uppercase; letter-spacing:.5px; }
+.progress-step.active .dot{ background:var(--orange); color:#fff; }
+.progress-step.active .lbl{ color:var(--gold-light); font-weight:700; }
+.progress-step.done .dot{ background:var(--leaf); color:#fff; }
+.progress-line{ position:absolute; top:17px; left:-50%; width:100%; height:2px; background:#3a3025; z-index:-1; }
+.progress-line.done{ background:var(--leaf); }
+
+.search-wrap{ padding:16px 12px 4px; }
+.search-wrap input{
+  width:100%; padding:13px 16px; border-radius:24px; border:1.5px solid rgba(74,44,23,.18);
+  background:var(--paper); font-family:'Poppins',sans-serif; font-size:14.5px; color:var(--ink);
+  outline:none; box-shadow:0 2px 8px rgba(74,44,23,.06);
+}
+.search-wrap input:focus{ border-color:var(--orange); }
+.badge-popular{
+  position:absolute; top:8px; left:8px; background:var(--red); color:#fff; font-size:10.5px;
+  font-weight:800; padding:4px 9px; border-radius:20px; box-shadow:0 2px 6px rgba(0,0,0,.25); z-index:2;
+}
+.item-card.out-of-stock{ opacity:.5; filter:grayscale(70%); }
+.item-card .oos-label{
+  width:100%; text-align:center; padding:12px; background:#888; color:#fff; border-radius:10px;
+  font-weight:700; font-size:14px;
+}
+.no-results{ text-align:center; padding:40px 20px; color:var(--brown); opacity:.7; font-size:14px; }
+
 .category-title{
   display:flex; align-items:center; gap:8px;
   background:linear-gradient(120deg, var(--clay-dark), #5a3014); color:var(--gold-light);
@@ -275,6 +322,11 @@ input.field:focus{outline:none; border-color:var(--orange);}
   </div>
 </header>
 
+<!-- SEARCH -->
+<div class="search-wrap">
+  <input type="text" id="searchBox" placeholder="🔍 Search juices, shakes, snacks..." oninput="renderMenu(this.value)">
+</div>
+
 <!-- MENU -->
 <div id="menu-area"></div>
 
@@ -301,9 +353,15 @@ input.field:focus{outline:none; border-color:var(--orange);}
   </div>
 
   <input type="text" id="custName" class="field" placeholder="Your Name">
-  <input type="tel" id="custPhone" class="field" placeholder="WhatsApp Number (10-digit, e.g. 9876543210)">
+  <input type="tel" id="custPhone" class="field" placeholder="WhatsApp Number (10-digit, e.g. 9876543210)" oninput="checkOrderAgain(this.value)">
+  <div id="orderAgainBox" style="display:none;"></div>
   <button class="btn-confirm" id="placeOrderBtn" disabled>SELECT PAYMENT METHOD FIRST</button>
-  <div class="wait-hint">⏱️ Orders typically ready in 10–15 minutes</div>
+  <div class="wait-hint" id="waitHintText">⏱️ Orders typically ready in 10–15 minutes</div>
+
+  <div class="footer-links">
+    <a href="https://wa.me/919999999999?text=Hi%20NS%20Juice%2C%20I%20have%20a%20question" target="_blank" class="footer-link whatsapp">💬 Chat on WhatsApp</a>
+    <a href="https://instagram.com/nsjuice" target="_blank" class="footer-link insta">📷 Follow us on Instagram</a>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -452,9 +510,9 @@ const menu = [
   { cat:"🥤 Natural Shakes", name:"Khajur Peanut Shake",     img:"images/khajur-peanut-shake.jpg",      s:60, m:70, l:80 },
   { cat:"🥤 Natural Shakes", name:"Khajur Banana Peanut",    img:"images/khajur-banana-peanut.jpg",     s:60, m:70, l:80 },
   { cat:"🥤 Natural Shakes", name:"Chocolate Shake",         img:"images/chocolate-shake.jpg",          s:40, m:50, l:60 },
-  { cat:"🥤 Natural Shakes", name:"Oreo Shake",              img:"images/oreo-shake.jpg",               s:40, m:50, l:60 },
-  { cat:"🥤 Natural Shakes", name:"Kit-Kat Shake",           img:"images/kitkat-shake.jpg",             s:50, m:60, l:70 },
-  { cat:"🥤 Natural Shakes", name:"Cold Coffee",             img:"images/cold-coffee.jpg",              s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Oreo Shake",              img:"images/oreo-shake.jpg",               s:40, m:50, l:60, popular:true },
+  { cat:"🥤 Natural Shakes", name:"Kit-Kat Shake",           img:"images/kitkat-shake.jpg",             s:50, m:60, l:70, popular:true },
+  { cat:"🥤 Natural Shakes", name:"Cold Coffee",             img:"images/cold-coffee.jpg",              s:40, m:50, l:60, popular:true },
   { cat:"🥤 Natural Shakes", name:"Vanilla",                 img:"images/vanilla.jpg",                  s:50, m:60, l:70 },
   { cat:"🥤 Natural Shakes", name:"Strawberry Shake",        img:"images/strawberry-shake.jpg",         s:40, m:50, l:60 },
   { cat:"🥤 Natural Shakes", name:"Dry Fruit Milk",          img:"images/dry-fruit-milk.jpg",           s:60, m:70, l:80 },
@@ -480,46 +538,70 @@ let currentItem = {};
 refreshPlaceOrderButton();
 
 const area = document.getElementById('menu-area');
-let currentCategory = "";
-let currentGrid = null;
+let outOfStockItems = new Set(); // populated live from Firebase 'stock_out'
 
-menu.forEach(i => {
-  if(currentCategory !== i.cat){
-    area.innerHTML += `<div class="category-title">${i.cat}</div>`;
-    const gridDiv = document.createElement('div');
-    gridDiv.className = 'menu-grid';
-    area.appendChild(gridDiv);
-    currentGrid = gridDiv;
-    currentCategory = i.cat;
+function renderMenu(searchTerm){
+  const term = (searchTerm || "").trim().toLowerCase();
+  area.innerHTML = "";
+  let currentCategory = "";
+  let currentGrid = null;
+  let anyMatch = false;
+
+  menu.forEach(i => {
+    if(term && !i.name.toLowerCase().includes(term)) return;
+    anyMatch = true;
+
+    if(currentCategory !== i.cat){
+      area.innerHTML += `<div class="category-title">${i.cat}</div>`;
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'menu-grid';
+      area.appendChild(gridDiv);
+      currentGrid = gridDiv;
+      currentCategory = i.cat;
+    }
+
+    const isOut = outOfStockItems.has(i.name);
+
+    const imgHTML = i.img
+      ? `<img src="${i.img}" alt="${i.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'no-img\\'>🥤</span>'">`
+      : `<span class="no-img">🥤</span>`;
+
+    let actionHTML = "";
+    if(isOut){
+      actionHTML = `<div class="oos-label">Out of Stock</div>`;
+    } else if(i.price){
+      actionHTML = `<button class="single-btn" onclick="quickAdd('${i.name}', ${i.price})">
+        <span>₹${i.price}</span><span class="plus">+</span>
+      </button>`;
+    } else {
+      actionHTML = `<div class="size-chips">`;
+      if(i.s) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S<br>₹${i.s}</button>`;
+      if(i.m) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M<br>₹${i.m}</button>`;
+      if(i.l) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L<br>₹${i.l}</button>`;
+      actionHTML += `</div>`;
+    }
+
+    const badgeHTML = i.popular ? `<div class="badge-popular">🔥 Bestseller</div>` : '';
+
+    const card = document.createElement('div');
+    card.className = 'item-card' + (isOut ? ' out-of-stock' : '');
+    card.style.position = 'relative';
+    card.innerHTML = `
+      ${badgeHTML}
+      <div class="card-img">${imgHTML}</div>
+      <div class="card-body">
+        <div class="card-name">${i.name}</div>
+        ${actionHTML}
+      </div>`;
+    currentGrid.appendChild(card);
+  });
+
+  if(!anyMatch){
+    area.innerHTML = `<div class="no-results">😕 No items found. Try a different search.</div>`;
   }
+}
 
-  const imgHTML = i.img
-    ? `<img src="${i.img}" alt="${i.name}" loading="lazy" onerror="this.parentElement.innerHTML='<span class=\\'no-img\\'>🥤</span>'">`
-    : `<span class="no-img">🥤</span>`;
-
-  let actionHTML = "";
-  if(i.price){
-    actionHTML = `<button class="single-btn" onclick="quickAdd('${i.name}', ${i.price})">
-      <span>₹${i.price}</span><span class="plus">+</span>
-    </button>`;
-  } else {
-    actionHTML = `<div class="size-chips">`;
-    if(i.s) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (S)', ${i.s})">S<br>₹${i.s}</button>`;
-    if(i.m) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (M)', ${i.m})">M<br>₹${i.m}</button>`;
-    if(i.l) actionHTML += `<button class="btn-size" onclick="openModal('${i.name} (L)', ${i.l})">L<br>₹${i.l}</button>`;
-    actionHTML += `</div>`;
-  }
-
-  const card = document.createElement('div');
-  card.className = 'item-card';
-  card.innerHTML = `
-    <div class="card-img">${imgHTML}</div>
-    <div class="card-body">
-      <div class="card-name">${i.name}</div>
-      ${actionHTML}
-    </div>`;
-  currentGrid.appendChild(card);
-});
+renderMenu("");
 
 function openModal(name, price){
   if(!isOpenNow()){ alert("We're currently closed. Please order between 10 AM – 10 PM."); return; }
@@ -528,6 +610,36 @@ function openModal(name, price){
   document.getElementById('prefModal').style.display = 'flex';
 }
 function closeModal(){ document.getElementById('prefModal').style.display = 'none'; }
+
+/* ================== ORDER AGAIN (repeat last order via phone match) ================== */
+function checkOrderAgain(phoneVal){
+  const box = document.getElementById('orderAgainBox');
+  const digits = phoneVal.replace(/\D/g,'');
+  if(digits.length !== 10){ box.style.display = 'none'; return; }
+  const saved = localStorage.getItem('nsjuice_last_' + digits);
+  if(!saved){ box.style.display = 'none'; return; }
+  try{
+    const data = JSON.parse(saved);
+    const itemNames = data.items.map(it => it.name).join(', ');
+    box.innerHTML = `
+      <div class="order-again-box">
+        🔁 <strong>Welcome back!</strong> Your last order: ${itemNames} — ₹${data.total}
+        <button onclick="loadOrderAgain('${digits}')">Order This Again</button>
+      </div>`;
+    box.style.display = 'block';
+  }catch(e){ box.style.display = 'none'; }
+}
+
+function loadOrderAgain(digits){
+  const saved = localStorage.getItem('nsjuice_last_' + digits);
+  if(!saved) return;
+  const data = JSON.parse(saved);
+  cart = JSON.parse(JSON.stringify(data.items));
+  recalcTotal();
+  updateCartDisplay();
+  document.getElementById('orderAgainBox').style.display = 'none';
+  window.scrollTo({top: document.querySelector('.cart-section').offsetTop - 20, behavior: 'smooth'});
+}
 
 function quickAdd(name, price){
   if(!isOpenNow()){ alert("We're currently closed. Please order between 10 AM – 10 PM."); return; }
@@ -652,6 +764,13 @@ function initFirebase(){
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
     firebaseReady = true;
+
+    // Live out-of-stock sync from admin dashboard
+    db.ref('stock_out').on('value', snap => {
+      const data = snap.val() || {};
+      outOfStockItems = new Set(Object.keys(data).filter(k => data[k]));
+      renderMenu(document.getElementById('searchBox') ? document.getElementById('searchBox').value : "");
+    });
   } catch(err){
     console.error("Firebase failed to load:", err);
     firebaseReady = false;
@@ -770,6 +889,10 @@ function finalizeOrder(name, phone){
       placedAt: placedAt
     };
     orderRef.set(orderData).then(() => {
+      // Save for "Order Again" next time this phone number is used
+      try{
+        localStorage.setItem('nsjuice_last_' + phone, JSON.stringify({items: cart, total: total, ts: Date.now()}));
+      }catch(e){ /* localStorage unavailable, skip silently */ }
       showConfirmation(date, orderRef.key, orderNumber, placedAt);
     });
   });
@@ -822,32 +945,50 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
 
     <div class="queue-card" style="margin-top:14px;">
       <div class="row"><span>Payment Method</span><span>${selectedPayment}</span></div>
-      <div class="row"><span>Current Status</span><span id="liveStatusText">Pending</span></div>
       <div class="row"><span>Orders Ahead of You</span><span id="queuePosition">—</span></div>
-      <div style="text-align:center;"><span class="status-badge Pending" id="statusBadge">⏳ Pending</span></div>
+
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-step active" id="step-Pending"><div class="dot">⏳</div><div class="lbl">Pending</div></div>
+        <div class="progress-step" id="step-Preparing"><div class="dot" style="position:relative;"><div class="progress-line" id="line1"></div>👨‍🍳</div><div class="lbl">Preparing</div></div>
+        <div class="progress-step" id="step-Ready"><div class="dot" style="position:relative;"><div class="progress-line" id="line2"></div>✅</div><div class="lbl">Ready</div></div>
+      </div>
     </div>
     <div class="wait-msg" id="waitMsg">⏱️ Estimated wait: 10–15 minutes. We'll notify you on WhatsApp at every step!</div>
+    <div id="reviewBox" style="display:none; margin-top:16px;">
+      <a href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK/review" target="_blank" class="footer-link" style="background:#4285F4; display:block;">⭐ Loved it? Rate us on Google</a>
+    </div>
   `;
+
+  function setStep(status){
+    ['Pending','Preparing','Ready'].forEach(s => {
+      document.getElementById('step-' + s).classList.remove('active','done');
+    });
+    const order = ['Pending','Preparing','Ready'];
+    const idx = order.indexOf(status);
+    order.forEach((s, i) => {
+      const el = document.getElementById('step-' + s);
+      if(i < idx) el.classList.add('done');
+      else if(i === idx) el.classList.add('active');
+    });
+    document.getElementById('line1').classList.toggle('done', idx >= 1);
+    document.getElementById('line2').classList.toggle('done', idx >= 2);
+  }
+  setStep('Pending');
 
   // Live listen to this order's status
   let lastKnownStatus = null;
   db.ref('orders/' + date + '/' + orderKey).on('value', snap => {
     const data = snap.val();
     if(!data) return;
-    const badge = document.getElementById('statusBadge');
-    const statusText = document.getElementById('liveStatusText');
     const waitMsg = document.getElementById('waitMsg');
-    badge.className = "status-badge " + data.status;
-    statusText.textContent = data.status;
+    setStep(data.status);
     if(data.status === 'Pending'){
-      badge.innerHTML = "⏳ Pending";
       waitMsg.textContent = "⏱️ Estimated wait: 10–15 minutes. We'll notify you on WhatsApp at every step!";
     } else if(data.status === 'Preparing'){
-      badge.innerHTML = "👨‍🍳 Preparing";
       waitMsg.textContent = "Our team is preparing your order right now. Almost there!";
     } else if(data.status === 'Ready'){
-      badge.innerHTML = "✅ Ready for Collection";
       waitMsg.textContent = "Your order is ready! Please collect it from the counter. Enjoy! 🥤";
+      document.getElementById('reviewBox').style.display = 'block';
     }
     // Ring a tune whenever the status actually changes (not on the first load)
     if(lastKnownStatus !== null && lastKnownStatus !== data.status){
@@ -856,7 +997,7 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
     lastKnownStatus = data.status;
   });
 
-  // Live queue position: count active orders placed before this one (order numbers can repeat now, so use placedAt)
+  // Live queue position + dynamic wait-time estimate (~5 min per active order ahead)
   db.ref('orders/' + date).on('value', snap => {
     const all = snap.val();
     if(!all) return;
@@ -867,6 +1008,12 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
       }
     });
     document.getElementById('queuePosition').textContent = ahead;
+
+    if(lastKnownStatus === 'Pending' || lastKnownStatus === null){
+      const minLow = 5 + ahead * 5;
+      const minHigh = 10 + ahead * 5;
+      document.getElementById('waitMsg').textContent = `⏱️ Estimated wait: ${minLow}–${minHigh} minutes. We'll notify you at every step!`;
+    }
   });
 }
 </script>
