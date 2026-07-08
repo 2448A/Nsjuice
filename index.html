@@ -740,30 +740,50 @@ function finalizeOrder(name, phone){
   const date = todayKey();
   const combinedRemarks = cart.filter(i => i.remark).map(i => i.name + " x" + i.qty + ": " + i.remark).join(" | ");
 
-  db.ref('order_counter/' + date).transaction(c => (c || 0) + 1, (err, committed, snap) => {
-    if(committed){
-      const orderNumber = snap.val();
-      const orderRef = db.ref('orders/' + date).push();
-      const orderData = {
-        orderNumber: orderNumber,
-        customer: name,
-        phone: "91" + phone,
-        items: cart,
-        totalAmount: total,
-        remarks: combinedRemarks,
-        paymentMethod: selectedPayment,
-        status: "Pending",
-        placedAt: Date.now()
-      };
-      orderRef.set(orderData).then(() => {
-        showConfirmation(date, orderRef.key, orderNumber);
-      });
-    }
+  db.ref('orders/' + date).once('value').then(snap => {
+    const all = snap.val() || {};
+    const activeCount = Object.values(all).filter(o => o.status === 'Pending' || o.status === 'Preparing').length;
+    const orderNumber = activeCount + 1; // queue-position style token
+    const placedAt = Date.now();
+    const orderRef = db.ref('orders/' + date).push();
+    const orderData = {
+      orderNumber: orderNumber,
+      customer: name,
+      phone: "91" + phone,
+      items: cart,
+      totalAmount: total,
+      remarks: combinedRemarks,
+      paymentMethod: selectedPayment,
+      status: "Pending",
+      placedAt: placedAt
+    };
+    orderRef.set(orderData).then(() => {
+      showConfirmation(date, orderRef.key, orderNumber, placedAt);
+    });
   });
 }
 
 /* ================== CONFIRMATION + LIVE STATUS ================== */
-function showConfirmation(date, orderKey, orderNumber){
+function playDing(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    [660, 880].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, now + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.35, now + i*0.15 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.15 + 0.35);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now + i*0.15);
+      osc.stop(now + i*0.15 + 0.4);
+    });
+  }catch(e){ /* audio blocked, ignore silently */ }
+}
+
+function showConfirmation(date, orderKey, orderNumber, placedAt){
   document.querySelectorAll('header, #menu-area, .cart-section').forEach(el => el.style.display = 'none');
   const screen = document.getElementById('confirmScreen');
   screen.style.display = 'block';
@@ -798,6 +818,7 @@ function showConfirmation(date, orderKey, orderNumber){
   `;
 
   // Live listen to this order's status
+  let lastKnownStatus = null;
   db.ref('orders/' + date + '/' + orderKey).on('value', snap => {
     const data = snap.val();
     if(!data) return;
@@ -816,15 +837,20 @@ function showConfirmation(date, orderKey, orderNumber){
       badge.innerHTML = "✅ Ready for Collection";
       waitMsg.textContent = "Your order is ready! Please collect it from the counter. Enjoy! 🥤";
     }
+    // Ring a tune whenever the status actually changes (not on the first load)
+    if(lastKnownStatus !== null && lastKnownStatus !== data.status){
+      playDing();
+    }
+    lastKnownStatus = data.status;
   });
 
-  // Live queue position: count Pending/Preparing orders with lower order number
+  // Live queue position: count active orders placed before this one (order numbers can repeat now, so use placedAt)
   db.ref('orders/' + date).on('value', snap => {
     const all = snap.val();
     if(!all) return;
     let ahead = 0;
     Object.values(all).forEach(o => {
-      if((o.status === 'Pending' || o.status === 'Preparing') && o.orderNumber < orderNumber){
+      if((o.status === 'Pending' || o.status === 'Preparing') && o.placedAt < placedAt){
         ahead++;
       }
     });
