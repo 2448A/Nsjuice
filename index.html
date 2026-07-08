@@ -499,7 +499,7 @@ menu.forEach(i => {
 
   let actionHTML = "";
   if(i.price){
-    actionHTML = `<button class="single-btn" onclick="openModal('${i.name}', ${i.price})">
+    actionHTML = `<button class="single-btn" onclick="quickAdd('${i.name}', ${i.price})">
       <span>₹${i.price}</span><span class="plus">+</span>
     </button>`;
   } else {
@@ -528,6 +528,18 @@ function openModal(name, price){
   document.getElementById('prefModal').style.display = 'flex';
 }
 function closeModal(){ document.getElementById('prefModal').style.display = 'none'; }
+
+function quickAdd(name, price){
+  if(!isOpenNow()){ alert("We're currently closed. Please order between 10 AM – 10 PM."); return; }
+  const existing = cart.find(it => it.name === name && it.price === price && it.remark === "");
+  if(existing){
+    existing.qty += 1;
+  } else {
+    cart.push({name, price, remark: "", qty: 1});
+  }
+  recalcTotal();
+  updateCartDisplay();
+}
 
 function saveItem(){
   let ice = document.getElementById('prefIce').value;
@@ -771,14 +783,14 @@ function playDing(){
     [660, 880].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sine';
+      osc.type = 'square';
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, now + i*0.15);
-      gain.gain.exponentialRampToValueAtTime(0.35, now + i*0.15 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.15 + 0.35);
+      gain.gain.exponentialRampToValueAtTime(0.9, now + i*0.15 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i*0.15 + 0.4);
       osc.connect(gain); gain.connect(ctx.destination);
       osc.start(now + i*0.15);
-      osc.stop(now + i*0.15 + 0.4);
+      osc.stop(now + i*0.15 + 0.45);
     });
   }catch(e){ /* audio blocked, ignore silently */ }
 }
