@@ -75,6 +75,7 @@ body{
 <div class="header">
   <div class="brand">NS Juice<small>LIVE CONTROL CENTER</small></div>
   <div class="date-badge" id="dateBadge">Today: --</div>
+  <button id="enableSoundBtn" style="background:var(--orange); color:#fff; border:none; padding:9px 16px; border-radius:20px; font-weight:700; font-size:12.5px; cursor:pointer;">🔔 Enable Sound Alerts</button>
   <div id="connection-status" style="color:#25D366;">🟢 Live</div>
 </div>
 
@@ -128,6 +129,43 @@ function elapsedMins(ts){
 
 document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
 
+/* ---- Sound alerts ---- */
+let soundEnabled = false;
+document.getElementById('enableSoundBtn').addEventListener('click', () => {
+  soundEnabled = true;
+  playDing(1); // quiet confirmation ding so staff knows it's working
+  const btn = document.getElementById('enableSoundBtn');
+  btn.textContent = "🔔 Sound On";
+  btn.style.background = "#25D366";
+});
+
+function playDing(times){
+  if(!soundEnabled) return;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const reps = times || 1;
+    for(let r = 0; r < reps; r++){
+      [660, 880].forEach((freq, i) => {
+        const t = now + r*0.6 + i*0.15;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.4);
+      });
+    }
+  }catch(e){ /* audio blocked, ignore silently */ }
+}
+
+let knownOrderKeys = new Set();
+let isFirstRenderForToday = true;
+
 let currentRef = null;
 let currentDateKey = null;
 
@@ -135,6 +173,8 @@ function attachTodayListener(){
   const key = todayKey();
   if(currentRef) currentRef.off('value'); // stop listening to the old day
   currentDateKey = key;
+  isFirstRenderForToday = true;
+  knownOrderKeys = new Set();
   currentRef = db.ref('orders/' + key);
   currentRef.on('value', renderOrders);
 }
@@ -148,8 +188,21 @@ function renderOrders(snapshot){
   pendingEl.innerHTML = ''; preparingEl.innerHTML = ''; readyEl.innerHTML = '';
   let counts = {Pending:0, Preparing:0, Ready:0};
 
+  const keysNow = orders ? Object.keys(orders) : [];
+
+  // Ring only for genuinely new orders arriving after the dashboard is already open (not on first load of the day)
+  if(!isFirstRenderForToday){
+    keysNow.forEach(k => {
+      if(!knownOrderKeys.has(k)){
+        playDing(3); // 3 rings — strong alert for a brand-new order
+      }
+    });
+  }
+  knownOrderKeys = new Set(keysNow);
+  isFirstRenderForToday = false;
+
   if(orders){
-    const keys = Object.keys(orders).sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
+    const keys = Object.keys(orders).sort((a,b) => (orders[b].placedAt||0) - (orders[a].placedAt||0));
 
     keys.forEach(key => {
       const order = orders[key];
