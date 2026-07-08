@@ -413,6 +413,11 @@ document.getElementById('startOrderBtn').addEventListener('click', () => {
   document.getElementById('welcomeOverlay').style.display = 'none';
 });
 
+// Auto move to menu 1 second after welcome screen appears (if shop is open)
+setTimeout(() => {
+  document.getElementById('welcomeOverlay').style.display = 'none';
+}, 1000);
+
 /* ================== MENU DATA ================== */
 const menu = [
   // FRUIT JUICES
