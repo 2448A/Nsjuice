@@ -112,9 +112,10 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Get today's date in DD/MM/YYYY format to match customer app
-function getTodayDate() {
-  return new Date().toLocaleDateString('en-GB'); 
+// Get today's date key exactly as index13.html writes it (YYYY-MM-DD)
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
 }
 function prettyDate(){
   return new Date().toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
@@ -127,22 +128,28 @@ function elapsedMins(ts){
 
 document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
 
-// Listen to 'live_orders' where index.html is sending data
-db.ref('live_orders').on('value', (snapshot) => {
+let currentRef = null;
+let currentDateKey = null;
+
+function attachTodayListener(){
+  const key = todayKey();
+  if(currentRef) currentRef.off('value'); // stop listening to the old day
+  currentDateKey = key;
+  currentRef = db.ref('orders/' + key);
+  currentRef.on('value', renderOrders);
+}
+
+function renderOrders(snapshot){
   const orders = snapshot.val();
   const pendingEl = document.getElementById('pending-orders');
   const preparingEl = document.getElementById('preparing-orders');
   const readyEl = document.getElementById('ready-orders');
-  
+
   pendingEl.innerHTML = ''; preparingEl.innerHTML = ''; readyEl.innerHTML = '';
   let counts = {Pending:0, Preparing:0, Ready:0};
-  let today = getTodayDate();
 
   if(orders){
-    // Filter only today's orders and sort by Order Number (latest first)
-    const keys = Object.keys(orders)
-      .filter(key => orders[key].date === today)
-      .sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
+    const keys = Object.keys(orders).sort((a,b) => orders[b].orderNumber - orders[a].orderNumber);
 
     keys.forEach(key => {
       const order = orders[key];
@@ -160,7 +167,7 @@ db.ref('live_orders').on('value', (snapshot) => {
         <div class="order-card">
           <div class="token-header">
             <span class="token-no">Order #${order.orderNumber}</span>
-            <span class="cust-info">${order.customer}<br><span class="phone" style="color:var(--gold-light);">💳 ${order.payment || 'Cash'}</span></span>
+            <span class="cust-info">${order.customer}<br><span class="phone" style="color:var(--gold-light);">💳 ${order.paymentMethod || 'Cash'}</span></span>
           </div>
           <div class="items-list">${itemsHTML}</div>
           <div class="total">Total: ₹${order.totalAmount}</div>
@@ -187,13 +194,22 @@ db.ref('live_orders').on('value', (snapshot) => {
     const el = document.getElementById(id);
     if(!el.innerHTML.trim()) el.innerHTML = '<div class="empty-msg">No orders here</div>';
   });
-});
+}
+
+attachTodayListener();
+// Check every minute in case midnight passes while dashboard stays open — switch to the new day's orders automatically
+setInterval(() => {
+  if(todayKey() !== currentDateKey){
+    document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
+    attachTodayListener();
+  }
+}, 60000);
 
 // Update Status in Firebase
 function updateStatus(orderId, newStatus){
-  db.ref('live_orders/' + orderId).update({ 
-      status: newStatus, 
-      statusUpdatedAt: Date.now() 
+  db.ref('orders/' + currentDateKey + '/' + orderId).update({
+      status: newStatus,
+      statusUpdatedAt: Date.now()
   });
 }
 </script>
