@@ -15,84 +15,84 @@
 }
 *{box-sizing:border-box;}
 body{
-  background:#181210; font-family:'Poppins',sans-serif; margin:0; padding:18px; color:#fff;
-  display:flex; flex-direction:column; min-height:100vh;
+  background:#181210; font-family:'Poppins',sans-serif; margin:0; padding:24px; color:#fff;
+  display:flex; flex-direction:column; min-height:100vh; font-size:16px;
 }
 .header{
-  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
-  border-bottom:2px solid var(--gold); padding-bottom:14px; margin-bottom:18px;
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;
+  border-bottom:3px solid var(--gold); padding-bottom:18px; margin-bottom:22px;
 }
-.header .brand{font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size:30px; font-weight:700;}
-.header .brand small{display:block; font-family:'Poppins'; font-size:11px; letter-spacing:2px; color:var(--orange); font-weight:600;}
-.header .date-badge{font-size:13px; color:#ccc; background:#262019; padding:8px 16px; border-radius:20px;}
-#connection-status{font-size:13px; font-weight:700;}
+.header .brand{font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size:40px; font-weight:700;}
+.header .brand small{display:block; font-family:'Poppins'; font-size:13px; letter-spacing:2px; color:var(--orange); font-weight:600;}
+.header .date-badge{font-size:16px; color:#ccc; background:#262019; padding:10px 20px; border-radius:22px;}
+#connection-status{font-size:16px; font-weight:700;}
 
-.summary-row{display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;}
+.summary-row{display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;}
 .summary-card{
-  flex:1; min-width:140px; background:#221b15; border-radius:10px; padding:14px 18px;
-  border-left:4px solid var(--gold); text-align:center;
+  flex:1; min-width:160px; background:#221b15; border-radius:12px; padding:18px 22px;
+  border-left:5px solid var(--gold); text-align:center;
 }
-.summary-card .num{font-size:28px; font-weight:800; color:var(--gold-light);}
-.summary-card .lbl{font-size:11.5px; color:#bbb; text-transform:uppercase; letter-spacing:1px; margin-top:2px;}
+.summary-card .num{font-size:38px; font-weight:800; color:var(--gold-light);}
+.summary-card .lbl{font-size:14px; color:#bbb; text-transform:uppercase; letter-spacing:1px; margin-top:4px;}
 .summary-card.pending{border-color:#ff9800;} .summary-card.pending .num{color:#ff9800;}
 .summary-card.preparing{border-color:var(--clay);} .summary-card.preparing .num{color:var(--gold-light);}
 .summary-card.ready{border-color:#25D366;} .summary-card.ready .num{color:#25D366;}
 
-.tab-row{display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+.tab-row{display:flex; gap:12px; margin-bottom:22px; flex-wrap:wrap;}
 .tab-btn{
-  background:#221b15; color:#ccc; border:1px solid #3a3025; padding:10px 18px; border-radius:9px;
-  font-weight:700; font-size:13px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  background:#221b15; color:#ccc; border:1.5px solid #3a3025; padding:13px 24px; border-radius:10px;
+  font-weight:700; font-size:16px; cursor:pointer; transition:background .15s ease, color .15s ease;
 }
 .tab-btn.active{ background:var(--clay); color:#fff; border-color:var(--clay); }
-.panel-box{ background:#1f1812; border-radius:12px; padding:18px; }
+.panel-box{ background:#1f1812; border-radius:14px; padding:24px; }
 
-.stock-cat-title{ color:var(--gold-light); font-weight:700; font-size:14px; margin:16px 0 8px; text-transform:uppercase; letter-spacing:1px; }
+.stock-cat-title{ color:var(--gold-light); font-weight:700; font-size:18px; margin:20px 0 10px; text-transform:uppercase; letter-spacing:1px; }
 .stock-row{
-  display:flex; justify-content:space-between; align-items:center; background:#2a221a; border-radius:9px;
-  padding:11px 14px; margin-bottom:8px; border:1px solid #3a3025;
+  display:flex; justify-content:space-between; align-items:center; background:#2a221a; border-radius:11px;
+  padding:15px 18px; margin-bottom:10px; border:1px solid #3a3025;
 }
-.stock-row .sname{ font-size:14px; color:#eee; }
+.stock-row .sname{ font-size:17px; color:#eee; }
 .stock-toggle{
-  border:none; padding:7px 16px; border-radius:20px; font-weight:700; font-size:12px; cursor:pointer;
+  border:none; padding:10px 20px; border-radius:22px; font-weight:700; font-size:14.5px; cursor:pointer;
 }
 .stock-toggle.in{ background:#25D366; color:#0a2b17; }
 .stock-toggle.out{ background:#D6483B; color:#fff; }
 
 .history-order{
-  background:#2a221a; border-radius:9px; padding:12px 14px; margin-bottom:9px; border:1px solid #3a3025; font-size:13.5px;
+  background:#2a221a; border-radius:11px; padding:16px 18px; margin-bottom:11px; border:1px solid #3a3025; font-size:16px;
 }
-.history-order .hh{ display:flex; justify-content:space-between; font-weight:700; margin-bottom:6px; }
+.history-order .hh{ display:flex; justify-content:space-between; font-weight:700; margin-bottom:8px; }
 
-.main-container{display:flex; gap:18px; flex-grow:1; flex-wrap:wrap;}
-.status-column{flex:1; min-width:300px; background:#1f1812; border-radius:12px; padding:16px; display:flex; flex-direction:column;}
-.status-header{text-align:center; font-size:1.3em; font-weight:700; border-bottom:2px solid #444; padding-bottom:10px; margin-bottom:14px;}
-.orders-list{flex-grow:1; overflow-y:auto; max-height:75vh;}
+.main-container{display:flex; gap:20px; flex-grow:1; flex-wrap:wrap;}
+.status-column{flex:1; min-width:320px; background:#1f1812; border-radius:14px; padding:20px; display:flex; flex-direction:column;}
+.status-header{text-align:center; font-size:1.6em; font-weight:700; border-bottom:2px solid #444; padding-bottom:13px; margin-bottom:17px;}
+.orders-list{flex-grow:1; overflow-y:auto; max-height:78vh;}
 
 #column-pending .status-header{color:#ff9800; border-color:#ff9800;}
 #column-preparing .status-header{color:var(--gold-light); border-color:var(--clay);}
 #column-ready .status-header{color:#25D366; border-color:#25D366;}
 
 .order-card{
-  background:#2a221a; border-radius:10px; padding:15px; margin-bottom:14px;
-  box-shadow:0 4px 10px rgba(0,0,0,.35); border:1px solid #3a3025;
+  background:#2a221a; border-radius:13px; padding:19px; margin-bottom:17px;
+  box-shadow:0 5px 14px rgba(0,0,0,.35); border:1px solid #3a3025;
 }
-.order-card .token-header{display:flex; justify-content:space-between; align-items:center; font-size:1.1em; font-weight:700; border-bottom:1px solid #444; padding-bottom:9px; margin-bottom:9px;}
-.order-card .token-no{color:var(--gold-light); font-size:1.4em; font-family:'Cormorant Garamond',serif;}
-.order-card .cust-info{font-size:13px; color:#ddd; text-align:right;}
-.order-card .cust-info .phone{display:block; color:#25D366; font-size:12px; margin-top:2px;}
+.order-card .token-header{display:flex; justify-content:space-between; align-items:center; font-size:1.35em; font-weight:700; border-bottom:1px solid #444; padding-bottom:11px; margin-bottom:11px;}
+.order-card .token-no{color:var(--gold-light); font-size:1.6em; font-family:'Cormorant Garamond',serif;}
+.order-card .cust-info{font-size:16px; color:#ddd; text-align:right;}
+.order-card .cust-info .phone{display:block; color:#25D366; font-size:15px; margin-top:3px;}
 
-.items-list{font-size:13.5px; line-height:1.7; color:#ddd;}
+.items-list{font-size:16px; line-height:1.8; color:#ddd;}
 .item-row{display:flex; justify-content:space-between;}
-.total{font-size:1.05em; font-weight:700; color:#4caf50; margin-top:8px;}
-.note{color:#ff9800; font-weight:600; margin-top:6px; font-size:0.85em;}
-.elapsed{font-size:11.5px; color:#888; margin-top:6px;}
+.total{font-size:1.25em; font-weight:700; color:#4caf50; margin-top:10px;}
+.note{color:#ff9800; font-weight:600; margin-top:8px; font-size:1em;}
+.elapsed{font-size:14px; color:#888; margin-top:8px;}
 
-.btn-group{display:flex; gap:10px; margin-top:13px;}
-.btn{padding:11px; border:none; border-radius:7px; font-weight:700; cursor:pointer; font-size:13.5px; flex:1; transition:transform .15s ease;}
+.btn-group{display:flex; gap:12px; margin-top:16px;}
+.btn{padding:14px; border:none; border-radius:9px; font-weight:700; cursor:pointer; font-size:16px; flex:1; transition:transform .15s ease;}
 .btn:hover{transform:translateY(-2px);}
 .btn-preparing{background:var(--clay); color:#fff;}
 .btn-ready{background:#25D366; color:#fff;}
-.empty-msg{color:#555; text-align:center; padding:24px; font-size:13px;}
+.empty-msg{color:#555; text-align:center; padding:30px; font-size:16px;}
 </style>
 </head>
 <body>
@@ -305,7 +305,7 @@ function elapsedMins(ts){
 
 document.getElementById('dateBadge').textContent = "Today: " + prettyDate();
 
-/* ---- Sound alerts ---- */
+/* ---- Sound alerts + browser notifications + keep screen awake ---- */
 let soundEnabled = false;
 document.getElementById('enableSoundBtn').addEventListener('click', () => {
   soundEnabled = true;
@@ -313,6 +313,30 @@ document.getElementById('enableSoundBtn').addEventListener('click', () => {
   const btn = document.getElementById('enableSoundBtn');
   btn.textContent = "🔔 Sound On";
   btn.style.background = "#25D366";
+
+  if('Notification' in window && Notification.permission !== 'granted'){
+    Notification.requestPermission();
+  }
+  requestWakeLock();
+});
+
+function notifyStaff(title, body){
+  if('Notification' in window && Notification.permission === 'granted'){
+    try{ new Notification(title, { body, icon: 'icon-192.png' }); }catch(e){}
+  }
+}
+
+/* Keep the counter/tablet screen from sleeping while the dashboard is open */
+let wakeLock = null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  }catch(e){ /* not supported or blocked, ignore silently */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && soundEnabled) requestWakeLock();
 });
 
 function playDing(times){
@@ -371,6 +395,7 @@ function renderOrders(snapshot){
     keysNow.forEach(k => {
       if(!knownOrderKeys.has(k)){
         playDing(3); // 3 rings — strong alert for a brand-new order
+        notifyStaff("🆕 New Order Received!", "Check the Pending column on your NS Juice dashboard.");
       }
     });
   }
