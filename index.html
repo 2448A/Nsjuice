@@ -976,9 +976,9 @@ function finalizeOrder(name, phone){
 }
 
 /* ================== CONFIRMATION + LIVE STATUS ================== */
-function setStar(name, n){
-  window.ratingSelections[name] = n;
-  const starsEl = document.getElementById('stars-' + name.replace(/\s+/g,'_'));
+function setStar(safeName, n){
+  window.ratingSelections[safeName] = n;
+  const starsEl = document.getElementById('stars-' + safeName);
   starsEl.querySelectorAll('span').forEach(s => {
     s.style.color = (parseInt(s.dataset.n) <= n) ? 'var(--gold)' : '#ccc';
   });
@@ -987,14 +987,15 @@ function setStar(name, n){
 let ratingSubmitted = false;
 function submitRating(date, orderKey){
   if(ratingSubmitted) return;
-  const names = Object.keys(window.ratingSelections || {});
-  const anyRated = names.some(n => window.ratingSelections[n] > 0);
+  const safeNames = Object.keys(window.ratingSelections || {});
+  const anyRated = safeNames.some(n => window.ratingSelections[n] > 0);
   if(!anyRated){ alert("Please rate at least one item, or skip if you don't want to."); return; }
 
-  names.forEach(name => {
-    const val = window.ratingSelections[name];
+  safeNames.forEach(safeName => {
+    const val = window.ratingSelections[safeName];
+    const realName = (window.ratingNameMap && window.ratingNameMap[safeName]) || safeName;
     if(val > 0){
-      db.ref('ratings/' + name).transaction(cur => {
+      db.ref('ratings/' + realName).transaction(cur => {
         cur = cur || { sum: 0, count: 0 };
         cur.sum += val;
         cur.count += 1;
@@ -1093,13 +1094,24 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
   const uniqueNames = [...new Set(cart.map(it => it.name))];
   window.ratingSelections = {};
   uniqueNames.forEach(name => {
-    window.ratingSelections[name] = 0;
+    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_');
     const row = document.createElement('div');
     row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #e3d8c2;";
-    row.innerHTML = `<span style="font-size:13.5px;">${name}</span><span id="stars-${name.replace(/\s+/g,'_')}"></span>`;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.style.fontSize = '13.5px';
+    nameSpan.textContent = name;
+
+    const starsSpan = document.createElement('span');
+    starsSpan.id = 'stars-' + safeName;
+    starsSpan.innerHTML = [1,2,3,4,5].map(n => `<span style="cursor:pointer; font-size:19px; color:#ccc;" data-n="${n}" onclick="setStar('${safeName}', ${n})">★</span>`).join('');
+
+    row.appendChild(nameSpan);
+    row.appendChild(starsSpan);
     starRowsEl.appendChild(row);
-    const starsEl = row.querySelector(`#stars-${name.replace(/\s+/g,'_')}`);
-    starsEl.innerHTML = [1,2,3,4,5].map(n => `<span style="cursor:pointer; font-size:19px; color:#ccc;" data-n="${n}" onclick="setStar('${name}', ${n})">★</span>`).join('');
+    window.ratingSelections[safeName] = 0;
+    window.ratingNameMap = window.ratingNameMap || {};
+    window.ratingNameMap[safeName] = name; // remember the real item name for saving to Firebase later
   });
 
   function setStep(status){
