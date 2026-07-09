@@ -142,6 +142,28 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
   font-weight:800; padding:4px 9px; border-radius:20px; box-shadow:0 2px 6px rgba(0,0,0,.25); z-index:2;
 }
 
+/* ---- Item review modal — Flipkart-style, plain white ---- */
+.ir-modal-content{
+  background:#fff; border-radius:14px; width:min(420px, 92vw); max-height:82vh;
+  overflow-y:auto; padding:0; color:#212121;
+}
+.ir-header{
+  display:flex; justify-content:space-between; align-items:center; padding:16px 18px;
+  border-bottom:1px solid #eee; position:sticky; top:0; background:#fff; z-index:2;
+}
+.ir-header h3{ font-size:16px; color:#212121; font-family:'Poppins',sans-serif; }
+.ir-close{ background:#f0f0f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px; color:#555; }
+.ir-summary{ padding:14px 18px; border-bottom:8px solid #f5f5f5; }
+.ir-summary .big-rating{ font-size:32px; font-weight:800; color:#212121; }
+.ir-summary .big-stars{ color:#388e3c; font-size:16px; margin-left:6px; }
+.ir-summary .rating-count-line{ color:#878787; font-size:12.5px; margin-top:4px; }
+.ir-list{ padding:6px 18px 20px; }
+.ir-review{ padding:14px 0; border-bottom:1px solid #f0f0f0; }
+.ir-review .ir-stars{ display:inline-block; background:#388e3c; color:#fff; font-size:12px; font-weight:700; padding:2px 7px; border-radius:4px; }
+.ir-review .ir-name{ font-size:12.5px; color:#878787; margin-top:6px; }
+.ir-review .ir-text{ font-size:13.5px; color:#212121; margin-top:5px; line-height:1.5; }
+.ir-empty{ text-align:center; padding:30px 20px; color:#878787; font-size:13px; }
+
 /* ---- Flipkart-style rating chip ---- */
 .rating-chip{
   display:inline-flex; align-items:center; gap:5px;
@@ -164,6 +186,12 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
   text-align:center; letter-spacing:.3px;
 }
 .item-card .card-img{ position:relative; }
+.img-rating-badge{
+  position:absolute; top:8px; right:8px; background:#388e3c; color:#fff; font-size:11.5px;
+  font-weight:800; padding:3px 7px; border-radius:5px; display:flex; align-items:center; gap:3px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25); cursor:pointer; z-index:2;
+}
+.img-rating-badge .star-icon{ font-size:10px; }
 
 .item-card.out-of-stock{ opacity:.5; filter:grayscale(70%); }
 .item-card .oos-label{
@@ -388,12 +416,6 @@ input.field:focus{outline:none; border-color:var(--orange);}
   </div>
 </header>
 
-<!-- CUSTOMER REVIEWS -->
-<div id="reviewsSection" style="display:none;">
-  <button class="reviews-title" id="reviewsToggleBtn" onclick="toggleReviews()">💬 Customer Reviews <span id="reviewsArrow">▾</span></button>
-  <div class="reviews-scroll" id="reviewsScroll" style="display:none;"></div>
-</div>
-
 <!-- SEARCH -->
 <div class="search-wrap">
   <input type="text" id="searchBox" placeholder="🔍 Search juices, shakes, snacks..." oninput="renderMenu(this.value)">
@@ -468,6 +490,18 @@ input.field:focus{outline:none; border-color:var(--orange);}
     </div>
     <button class="btn-add" onclick="saveItem()">Add to Order</button>
     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ITEM-SPECIFIC RATINGS & REVIEWS (Flipkart-style, white background) -->
+<div class="modal" id="itemReviewModal">
+  <div class="ir-modal-content">
+    <div class="ir-header">
+      <h3 id="itemReviewTitle"></h3>
+      <button class="ir-close" onclick="closeItemReviewModal()">✕</button>
+    </div>
+    <div id="itemReviewSummary" class="ir-summary"></div>
+    <div id="itemReviewList" class="ir-list"></div>
   </div>
 </div>
 
@@ -563,57 +597,57 @@ setTimeout(() => {
 /* ================== MENU DATA ================== */
 const menu = [
   // FRUIT JUICES
-  { cat:"🍊 Fruit Juices", name:"Mousambi Juice",        img:"images/mousambi-juice.jpg",          s:40, m:50, l:60, dr:4.3, dc:218 },
-  { cat:"🍊 Fruit Juices", name:"Orange Juice",           img:"images/orange-juice.jpg",             s:40, m:50, l:60, dr:4.5, dc:342 },
-  { cat:"🍊 Fruit Juices", name:"Mix Fruit Juice",        img:"images/mix-fruit-juice.jpg",          s:40, m:50, l:60, dr:4.2, dc:187 },
-  { cat:"🍊 Fruit Juices", name:"Pineapple Juice",        img:"images/pineapple-juice.jpg",          s:40, m:50, l:60, dr:4.4, dc:156 },
-  { cat:"🍊 Fruit Juices", name:"Watermelon Juice",       img:"images/watermelon-juice.jpg",         s:40, m:50, l:60, dr:4.6, dc:298 },
-  { cat:"🍊 Fruit Juices", name:"Sweet Lime Juice",       img:"",                                    s:40, m:50, l:60, dr:4.3, dc:134 },
-  { cat:"🍊 Fruit Juices", name:"Ash Gourd (Petha Fruit)",img:"images/ash-gourd.jpg",                s:30, m:40, l:50, dr:4.1, dc:89  },
-  { cat:"🍊 Fruit Juices", name:"Pomegranate Juice",      img:"images/pomegranate-juice.jpg",        s:40, m:50, l:60, dr:4.5, dc:203 },
+  { cat:"🍊 Fruit Juices", name:"Mousambi Juice",        img:"images/mousambi-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Orange Juice",           img:"images/orange-juice.jpg",             s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Mix Fruit Juice",        img:"images/mix-fruit-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Pineapple Juice",        img:"images/pineapple-juice.jpg",          s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Watermelon Juice",       img:"images/watermelon-juice.jpg",         s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Sweet Lime Juice",       img:"",                                    s:40, m:50, l:60 },
+  { cat:"🍊 Fruit Juices", name:"Ash Gourd (Petha Fruit)",img:"images/ash-gourd.jpg",                s:30, m:40, l:50  },
+  { cat:"🍊 Fruit Juices", name:"Pomegranate Juice",      img:"images/pomegranate-juice.jpg",        s:40, m:50, l:60 },
 
   // VEGETABLE JUICES
-  { cat:"🥕 Vegetable Juices", name:"Mix Vegetable Juice",        img:"images/mix-fruit-juice.jpg",  s:40, m:50, l:60, dr:4.2, dc:112 },
-  { cat:"🥕 Vegetable Juices", name:"Gajar (Carrot) Juice",       img:"",                            s:30, m:40, l:50, dr:4.3, dc:97  },
-  { cat:"🥕 Vegetable Juices", name:"ABC Juice",                  img:"images/apple.jpg",            s:40, m:50, l:60, dr:4.4, dc:143 },
-  { cat:"🥕 Vegetable Juices", name:"Chukandar (Beetroot) Juice", img:"",                            s:50, m:60, l:70, dr:4.2, dc:76  },
+  { cat:"🥕 Vegetable Juices", name:"Mix Vegetable Juice",        img:"images/mix-fruit-juice.jpg",  s:40, m:50, l:60 },
+  { cat:"🥕 Vegetable Juices", name:"Gajar (Carrot) Juice",       img:"",                            s:30, m:40, l:50  },
+  { cat:"🥕 Vegetable Juices", name:"ABC Juice",                  img:"images/apple.jpg",            s:40, m:50, l:60 },
+  { cat:"🥕 Vegetable Juices", name:"Chukandar (Beetroot) Juice", img:"",                            s:50, m:60, l:70  },
 
   // NATURAL SHAKES
-  { cat:"🥤 Natural Shakes", name:"Banana",                  img:"images/banana.jpg",                   s:40, m:50, l:60, dr:4.3, dc:267 },
-  { cat:"🥤 Natural Shakes", name:"Banana Chocolate Shake",  img:"images/banana-choco-shake.jpg",       s:50, m:60, l:70, dr:4.5, dc:189 },
-  { cat:"🥤 Natural Shakes", name:"Banana Peanut Shake",     img:"images/banana-peanut-shake.jpg",      s:50, m:60, l:70, dr:4.4, dc:154 },
-  { cat:"🥤 Natural Shakes", name:"Mango",                   img:"images/mango.jpg",                    s:40, m:50, l:60, dr:4.6, dc:412 },
-  { cat:"🥤 Natural Shakes", name:"Mango Butter Scotch Shake",img:"images/mango-butterscotch-shake.jpg",s:50, m:60, l:70, dr:4.5, dc:223 },
-  { cat:"🥤 Natural Shakes", name:"Papaya",                  img:"images/papaya.jpg",                   s:40, m:50, l:60, dr:4.1, dc:88  },
-  { cat:"🥤 Natural Shakes", name:"Mix Fruit Shake",         img:"images/mix-fruit-shake.jpg",          s:40, m:50, l:60, dr:4.3, dc:176 },
-  { cat:"🥤 Natural Shakes", name:"Cheeku",                  img:"images/cheeku.jpg",                   s:40, m:50, l:60, dr:4.2, dc:121 },
-  { cat:"🥤 Natural Shakes", name:"Coconut Shake",           img:"images/coconut-shake.jpg",            s:40, m:50, l:60, dr:4.4, dc:198 },
-  { cat:"🥤 Natural Shakes", name:"Fruit Cream Shake",       img:"images/fruit-cream-shake.jpg",        s:50, m:60, l:70, dr:4.5, dc:167 },
-  { cat:"🥤 Natural Shakes", name:"Apple",                   img:"images/apple.jpg",                    s:40, m:50, l:60, dr:4.3, dc:134 },
-  { cat:"🥤 Natural Shakes", name:"Khajur Shake",            img:"images/khajur-shake.jpg",             s:50, m:60, l:70, dr:4.4, dc:145 },
-  { cat:"🥤 Natural Shakes", name:"Khajur Peanut Shake",     img:"images/khajur-peanut-shake.jpg",      s:60, m:70, l:80, dr:4.5, dc:132 },
-  { cat:"🥤 Natural Shakes", name:"Khajur Banana Peanut",    img:"images/khajur-banana-peanut.jpg",     s:60, m:70, l:80, dr:4.4, dc:119 },
-  { cat:"🥤 Natural Shakes", name:"Chocolate Shake",         img:"images/chocolate-shake.jpg",          s:40, m:50, l:60, dr:4.5, dc:334 },
-  { cat:"🥤 Natural Shakes", name:"Oreo Shake",              img:"images/oreo-shake.jpg",               s:40, m:50, l:60, dr:4.6, dc:287, popular:true },
-  { cat:"🥤 Natural Shakes", name:"Kit-Kat Shake",           img:"images/kitkat-shake.jpg",             s:50, m:60, l:70, dr:4.5, dc:256, popular:true },
-  { cat:"🥤 Natural Shakes", name:"Cold Coffee",             img:"images/cold-coffee.jpg",              s:40, m:50, l:60, dr:4.7, dc:389, popular:true },
-  { cat:"🥤 Natural Shakes", name:"Vanilla",                 img:"images/vanilla.jpg",                  s:50, m:60, l:70, dr:4.4, dc:178 },
-  { cat:"🥤 Natural Shakes", name:"Strawberry Shake",        img:"images/strawberry-shake.jpg",         s:40, m:50, l:60, dr:4.5, dc:312 },
-  { cat:"🥤 Natural Shakes", name:"Dry Fruit Milk",          img:"images/dry-fruit-milk.jpg",           s:60, m:70, l:80, dr:4.3, dc:143 },
-  { cat:"🥤 Natural Shakes", name:"Protein Shake",           img:"images/protein-shake.jpg",            s:60, m:70, l:80, dr:4.4, dc:198 },
-  { cat:"🥤 Natural Shakes", name:"Butterscotch Milk",       img:"images/butterscotch-milk.jpg",        s:50, m:60, l:70, dr:4.3, dc:167 },
-  { cat:"🥤 Natural Shakes", name:"Black Currant Milk",      img:"images/black-currant-milk.jpg",       s:50, m:60, l:70, dr:4.2, dc:134 },
+  { cat:"🥤 Natural Shakes", name:"Banana",                  img:"images/banana.jpg",                   s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Banana Chocolate Shake",  img:"images/banana-choco-shake.jpg",       s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Banana Peanut Shake",     img:"images/banana-peanut-shake.jpg",      s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Mango",                   img:"images/mango.jpg",                    s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Mango Butter Scotch Shake",img:"images/mango-butterscotch-shake.jpg",s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Papaya",                  img:"images/papaya.jpg",                   s:40, m:50, l:60  },
+  { cat:"🥤 Natural Shakes", name:"Mix Fruit Shake",         img:"images/mix-fruit-shake.jpg",          s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Cheeku",                  img:"images/cheeku.jpg",                   s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Coconut Shake",           img:"images/coconut-shake.jpg",            s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Fruit Cream Shake",       img:"images/fruit-cream-shake.jpg",        s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Apple",                   img:"images/apple.jpg",                    s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Shake",            img:"images/khajur-shake.jpg",             s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Peanut Shake",     img:"images/khajur-peanut-shake.jpg",      s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Khajur Banana Peanut",    img:"images/khajur-banana-peanut.jpg",     s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Chocolate Shake",         img:"images/chocolate-shake.jpg",          s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Oreo Shake",              img:"images/oreo-shake.jpg",               s:40, m:50, l:60, popular:true },
+  { cat:"🥤 Natural Shakes", name:"Kit-Kat Shake",           img:"images/kitkat-shake.jpg",             s:50, m:60, l:70, popular:true },
+  { cat:"🥤 Natural Shakes", name:"Cold Coffee",             img:"images/cold-coffee.jpg",              s:40, m:50, l:60, popular:true },
+  { cat:"🥤 Natural Shakes", name:"Vanilla",                 img:"images/vanilla.jpg",                  s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Strawberry Shake",        img:"images/strawberry-shake.jpg",         s:40, m:50, l:60 },
+  { cat:"🥤 Natural Shakes", name:"Dry Fruit Milk",          img:"images/dry-fruit-milk.jpg",           s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Protein Shake",           img:"images/protein-shake.jpg",            s:60, m:70, l:80 },
+  { cat:"🥤 Natural Shakes", name:"Butterscotch Milk",       img:"images/butterscotch-milk.jpg",        s:50, m:60, l:70 },
+  { cat:"🥤 Natural Shakes", name:"Black Currant Milk",      img:"images/black-currant-milk.jpg",       s:50, m:60, l:70 },
 
   // SNACKS
-  { cat:"🍴 Snacks Menu", name:"Chai",                price:20, img:"", dr:4.6, dc:523 },
-  { cat:"🍴 Snacks Menu", name:"Hot Coffee",          price:30, img:"", dr:4.5, dc:312 },
-  { cat:"🍴 Snacks Menu", name:"Patties (Aloo)",      price:15, img:"", dr:4.3, dc:287 },
-  { cat:"🍴 Snacks Menu", name:"Patties (Paneer)",    price:20, img:"", dr:4.4, dc:198 },
-  { cat:"🍴 Snacks Menu", name:"Veg Grill Sandwich",  price:50, img:"", dr:4.5, dc:234 },
-  { cat:"🍴 Snacks Menu", name:"Healthy Sandwich",    price:60, img:"", dr:4.4, dc:178 },
-  { cat:"🍴 Snacks Menu", name:"Bun Maska",           price:30, img:"", dr:4.3, dc:256 },
-  { cat:"🍴 Snacks Menu", name:"Hot Chocolate",       price:40, img:"", dr:4.5, dc:189 },
-  { cat:"🍴 Snacks Menu", name:"Kulhad Lassi",        price:40, img:"", dr:4.7, dc:445, popular:true },
+  { cat:"🍴 Snacks Menu", name:"Chai",                price:20, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Hot Coffee",          price:30, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Aloo)",      price:15, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Paneer)",    price:20, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Veg Grill Sandwich",  price:50, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Healthy Sandwich",    price:60, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Bun Maska",           price:30, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Hot Chocolate",       price:40, img:"" },
+  { cat:"🍴 Snacks Menu", name:"Kulhad Lassi",        price:40, img:"", popular:true },
 ];
 
 let cart = [];
@@ -624,6 +658,7 @@ refreshPlaceOrderButton();
 const area = document.getElementById('menu-area');
 let outOfStockItems = new Set(); // populated live from Firebase 'stock_out'
 let itemRatings = {}; // populated live from Firebase 'ratings' — { name: {avg, count} }
+let allFeedbackData = {}; // populated live from Firebase 'feedback' — used for per-item review lookup
 
 function renderMenu(searchTerm){
   const term = (searchTerm || "").trim().toLowerCase();
@@ -670,11 +705,9 @@ function renderMenu(searchTerm){
     const badgeHTML = i.popular ? `<div class="badge-popular">🔥 Bestseller</div>`
       : (ratingInfo && ratingInfo.count >= 3 && ratingInfo.avg >= 4.5) ? `<div class="badge-popular">🔥 Bestseller</div>` : '';
 
-    // Flipkart-style rating chip — use live Firebase rating if available, else item's default rating
-    const liveAvg   = ratingInfo && ratingInfo.count > 0 ? ratingInfo.avg   : null;
-    const liveCount = ratingInfo && ratingInfo.count > 0 ? ratingInfo.count : null;
-    const dispAvg   = liveAvg   !== null ? liveAvg.toFixed(1)   : (i.dr || null);
-    const dispCount = liveCount !== null ? liveCount             : (i.dc || null);
+    // Flipkart-style rating chip — ONLY real, live customer ratings from Firebase (no fake numbers)
+    const dispAvg   = ratingInfo && ratingInfo.count > 0 ? ratingInfo.avg.toFixed(1) : null;
+    const dispCount = ratingInfo && ratingInfo.count > 0 ? ratingInfo.count : null;
 
     // Colour: >=4.0 green, 3.5-3.9 amber, <3.5 red (same as Flipkart)
     const ratingColor = dispAvg >= 4.0 ? '#388e3c' : dispAvg >= 3.5 ? '#f57f17' : '#c62828';
@@ -684,7 +717,12 @@ function renderMenu(searchTerm){
            ${dispAvg} <span class="star-icon">★</span>
            ${dispCount ? `<span class="sep"></span><span class="count">${dispCount >= 1000 ? (dispCount/1000).toFixed(1)+'k' : dispCount} ratings</span>` : ''}
          </div>
-         <span class="see-reviews" onclick="toggleReviews()">See customer reviews ›</span>` : '';
+         <span class="see-reviews" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">See customer reviews ›</span>`
+      : `<span class="see-reviews" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">See customer reviews ›</span>`;
+
+    // Small rating badge on top of the product image itself (Amazon/Flipkart thumbnail style)
+    const imgRatingBadge = dispAvg
+      ? `<div class="img-rating-badge" style="background:${ratingColor};" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">${dispAvg} <span class="star-icon">★</span></div>` : '';
 
     // Show item name as text overlay on the image (like product name printed on pack)
     const imgLabelHTML = i.img ? `<div class="img-label">${i.name}</div>` : '';
@@ -694,7 +732,7 @@ function renderMenu(searchTerm){
     card.style.position = 'relative';
     card.innerHTML = `
       ${badgeHTML}
-      <div class="card-img">${imgHTML}${imgLabelHTML}</div>
+      <div class="card-img">${imgHTML}${imgLabelHTML}${imgRatingBadge}</div>
       <div class="card-body">
         <div class="card-name">${i.name}</div>
         ${ratingHTML}
@@ -825,12 +863,43 @@ function toggleCart(open){
   document.getElementById('cartOverlay').classList.toggle('open', open);
 }
 
-function toggleReviews(){
-  const scrollEl = document.getElementById('reviewsScroll');
-  const arrow = document.getElementById('reviewsArrow');
-  const isOpen = scrollEl.style.display !== 'none';
-  scrollEl.style.display = isOpen ? 'none' : 'flex';
-  arrow.textContent = isOpen ? '▾' : '▴';
+function showItemReviews(itemName){
+  document.getElementById('itemReviewTitle').textContent = itemName;
+  const info = itemRatings[itemName];
+
+  const summaryEl = document.getElementById('itemReviewSummary');
+  if(info && info.count > 0){
+    summaryEl.innerHTML = `
+      <span class="big-rating">${info.avg.toFixed(1)}</span><span class="big-stars">★</span>
+      <div class="rating-count-line">${info.count} rating${info.count > 1 ? 's' : ''}</div>`;
+  } else {
+    summaryEl.innerHTML = `<div class="rating-count-line">No ratings yet — be the first to rate this item!</div>`;
+  }
+
+  const matches = Object.values(allFeedbackData || {})
+    .filter(f => f.itemRatings && f.itemRatings.includes(itemName) && f.text)
+    .sort((a,b) => (b.ts||0) - (a.ts||0));
+
+  const listEl = document.getElementById('itemReviewList');
+  if(matches.length === 0){
+    listEl.innerHTML = '<div class="ir-empty">No written reviews for this item yet.</div>';
+  } else {
+    listEl.innerHTML = matches.map(f => {
+      const itemLine = (f.itemRatings || '').split(' | ').find(line => line.startsWith(itemName));
+      const starCount = itemLine ? (itemLine.match(/⭐/g) || []).length : 0;
+      return `
+        <div class="ir-review">
+          ${starCount ? `<span class="ir-stars">${starCount} ★</span>` : ''}
+          <div class="ir-name">${f.customer || 'Customer'}</div>
+          <div class="ir-text">${f.text}</div>
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('itemReviewModal').style.display = 'flex';
+}
+
+function closeItemReviewModal(){
+  document.getElementById('itemReviewModal').style.display = 'none';
 }
 
 function updateCartDisplay(){
@@ -924,21 +993,9 @@ function initFirebase(){
       renderMenu(document.getElementById('searchBox') ? document.getElementById('searchBox').value : "");
     });
 
-    // Public customer reviews — show the latest 8 feedback entries to build trust
-    db.ref('feedback').limitToLast(8).on('value', snap => {
-      const data = snap.val() || {};
-      const keys = Object.keys(data).sort((a,b) => (data[b].ts||0) - (data[a].ts||0));
-      const section = document.getElementById('reviewsSection');
-      const scrollEl = document.getElementById('reviewsScroll');
-      if(keys.length === 0){ section.style.display = 'none'; return; }
-      section.style.display = 'block';
-      scrollEl.innerHTML = keys.map(k => {
-        const f = data[k];
-        const starsLine = f.ratingAvg ? `<div style="color:var(--gold); font-size:13px; margin-top:2px;">${'★'.repeat(Math.round(f.ratingAvg))}${'☆'.repeat(5-Math.round(f.ratingAvg))} <span style="color:#999; font-size:11px;">(${f.ratingAvg})</span></div>` : '';
-        const itemsLine = f.itemRatings ? `<div style="font-size:11px; color:#a08a6a; margin-top:4px;">${f.itemRatings}</div>` : '';
-        const textLine = f.text ? `<div class="rtext">${f.text}</div>` : '';
-        return `<div class="review-card"><div class="rname">🙂 ${f.customer || 'Customer'}</div>${starsLine}${itemsLine}${textLine}</div>`;
-      }).join('');
+    // Full feedback dataset — used by showItemReviews() to find reviews for a specific item
+    db.ref('feedback').on('value', snap => {
+      allFeedbackData = snap.val() || {};
     });
   } catch(err){
     console.error("Firebase failed to load:", err);
