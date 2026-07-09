@@ -115,7 +115,12 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
 .progress-line{ position:absolute; top:17px; left:-50%; width:100%; height:2px; background:#3a3025; z-index:-1; }
 .progress-line.done{ background:var(--leaf); }
 
-.reviews-title{ padding:16px 12px 8px; font-weight:800; font-size:15px; color:var(--clay-dark); }
+.reviews-title{
+  width:100%; text-align:left; padding:14px 16px; margin:14px 12px 0; border:none; border-radius:12px;
+  background:var(--paper); box-shadow:0 3px 12px rgba(74,44,23,.09); border:1px solid rgba(74,44,23,.07);
+  font-weight:800; font-size:15px; color:var(--clay-dark); cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+}
 .reviews-scroll{ display:flex; gap:12px; overflow-x:auto; padding:2px 12px 12px; scrollbar-width:none; }
 .reviews-scroll::-webkit-scrollbar{ display:none; }
 .review-card{
@@ -361,8 +366,8 @@ input.field:focus{outline:none; border-color:var(--orange);}
 
 <!-- CUSTOMER REVIEWS -->
 <div id="reviewsSection" style="display:none;">
-  <div class="reviews-title">💬 What Our Customers Say</div>
-  <div class="reviews-scroll" id="reviewsScroll"></div>
+  <button class="reviews-title" id="reviewsToggleBtn" onclick="toggleReviews()">💬 Customer Reviews <span id="reviewsArrow">▾</span></button>
+  <div class="reviews-scroll" id="reviewsScroll" style="display:none;"></div>
 </div>
 
 <!-- SEARCH -->
@@ -636,7 +641,7 @@ function renderMenu(searchTerm){
     const badgeHTML = i.popular ? `<div class="badge-popular">🔥 Bestseller</div>`
       : (ratingInfo && ratingInfo.count >= 3 && ratingInfo.avg >= 4.5) ? `<div class="badge-popular">🔥 Bestseller</div>` : '';
     const ratingHTML = ratingInfo && ratingInfo.count > 0
-      ? `<div style="font-size:11.5px; color:var(--gold); margin-top:2px;">⭐ ${ratingInfo.avg.toFixed(1)} (${ratingInfo.count})</div>` : '';
+      ? `<div style="font-size:13px; color:var(--gold); margin-top:2px; letter-spacing:1px;">${'★'.repeat(Math.round(ratingInfo.avg))}${'☆'.repeat(5-Math.round(ratingInfo.avg))}</div>` : '';
 
     const card = document.createElement('div');
     card.className = 'item-card' + (isOut ? ' out-of-stock' : '');
@@ -772,6 +777,14 @@ function removeItem(index){
 function toggleCart(open){
   document.getElementById('cartSection').classList.toggle('open', open);
   document.getElementById('cartOverlay').classList.toggle('open', open);
+}
+
+function toggleReviews(){
+  const scrollEl = document.getElementById('reviewsScroll');
+  const arrow = document.getElementById('reviewsArrow');
+  const isOpen = scrollEl.style.display !== 'none';
+  scrollEl.style.display = isOpen ? 'none' : 'flex';
+  arrow.textContent = isOpen ? '▾' : '▴';
 }
 
 function updateCartDisplay(){
