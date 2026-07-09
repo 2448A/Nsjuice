@@ -20,17 +20,14 @@
 :root{
   --cream:#FBF5E9; --cream-soft:#F3E9D6; --clay:#9B5A33; --clay-dark:#6B3A1E;
   --brown:#4A2C17; --brown-deep:#33190C; --gold:#C9A227; --gold-light:#E8C766;
-  --orange:#E2742A; --leaf:#5C7A3D; --ink:#2A1A0E; --paper:#FFFDF8; --red:#D6483B;
+  --orange:#E2742A; --leaf:#5C7A3D; --ink:#2A1A0E; --paper:#FFFFFF; --red:#D6483B;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html, body{ overflow-x:hidden; max-width:100vw; }
 body{
   font-family:'Poppins',sans-serif; color:var(--ink); padding-bottom:50px;
   width:100%; margin:0 auto;
-  background:
-    radial-gradient(ellipse 600px 360px at 90% 0%, rgba(201,162,39,.10), transparent 60%),
-    radial-gradient(ellipse 500px 420px at 0% 30%, rgba(94,122,61,.08), transparent 60%),
-    var(--cream);
+  background:#FFFFFF;
 }
 @media (min-width:640px){
   body{ max-width:600px; }
@@ -185,6 +182,13 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
   color:#fff; font-size:11.5px; font-weight:700; padding:14px 8px 7px;
   text-align:center; letter-spacing:.3px;
 }
+.top-rating-box{
+  display:inline-flex; align-items:center; gap:4px; background:#388e3c; color:#fff;
+  font-size:12px; font-weight:800; padding:3px 8px; border-radius:5px; cursor:pointer;
+  width:fit-content; margin-bottom:4px;
+}
+.top-rating-box .star-icon{ font-size:10.5px; }
+
 .item-card .card-img{ position:relative; }
 .img-rating-badge{
   position:absolute; top:8px; right:8px; background:#388e3c; color:#fff; font-size:11.5px;
@@ -712,13 +716,11 @@ function renderMenu(searchTerm){
     // Colour: >=4.0 green, 3.5-3.9 amber, <3.5 red (same as Flipkart)
     const ratingColor = dispAvg >= 4.0 ? '#388e3c' : dispAvg >= 3.5 ? '#f57f17' : '#c62828';
 
-    const ratingHTML = dispAvg
-      ? `<div class="rating-chip" style="background:${ratingColor};">
-           ${dispAvg} <span class="star-icon">★</span>
-           ${dispCount ? `<span class="sep"></span><span class="count">${dispCount >= 1000 ? (dispCount/1000).toFixed(1)+'k' : dispCount} ratings</span>` : ''}
-         </div>
-         <span class="see-reviews" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">See customer reviews ›</span>`
-      : `<span class="see-reviews" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">See customer reviews ›</span>`;
+    // Small rating box shown directly ABOVE the product name (live from Firebase)
+    const topRatingBox = dispAvg
+      ? `<div class="top-rating-box" style="background:${ratingColor};" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">${dispAvg} <span class="star-icon">★</span></div>` : '';
+
+    const seeReviewsLink = `<span class="see-reviews" onclick="showItemReviews('${i.name.replace(/'/g,"\\'")}')">See customer reviews ›</span>`;
 
     // Small rating badge on top of the product image itself (Amazon/Flipkart thumbnail style)
     const imgRatingBadge = dispAvg
@@ -735,7 +737,8 @@ function renderMenu(searchTerm){
       <div class="card-img">${imgHTML}${imgLabelHTML}${imgRatingBadge}</div>
       <div class="card-body">
         <div class="card-name">${i.name}</div>
-        ${ratingHTML}
+        ${topRatingBox}
+        ${seeReviewsLink}
         ${actionHTML}
       </div>`;
     currentGrid.appendChild(card);
