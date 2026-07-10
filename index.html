@@ -550,6 +550,14 @@ input.field:focus{outline:none; border-color:var(--orange);}
 <!-- STATUS TOAST (non-blocking, auto-dismiss) -->
 <div class="status-toast" id="statusToast"></div>
 
+<!-- ORDER READY CONFIRMATION (blocking, needs customer OK tap) -->
+<div class="overlay" id="readyConfirmOverlay" style="display:none; z-index:850;">
+  <div style="font-size:56px;">🎉</div>
+  <h1 style="font-size:26px; margin:10px 0 6px;">Ready!</h1>
+  <p style="font-size:15px; max-width:320px; line-height:1.6; opacity:.92;">Your order is ready. Please collect your order from the counter.</p>
+  <button onclick="acknowledgeReady()" style="margin-top:22px; width:100%; max-width:280px; background:var(--leaf); color:#fff; border:none; padding:15px; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer;">OK, Got it!</button>
+</div>
+
 <script>
 /* ================== OPENING HOURS ================== */
 const OPEN_HOUR = 10;   // 10 AM
@@ -1147,6 +1155,13 @@ function finalizeOrder(name, phone){
 }
 
 /* ================== CONFIRMATION + LIVE STATUS ================== */
+function acknowledgeReady(){
+  document.getElementById('readyConfirmOverlay').style.display = 'none';
+  if(window.currentReadyRef){
+    window.currentReadyRef.update({ customerAcknowledged: true, acknowledgedAt: Date.now() });
+  }
+}
+
 let toastTimer = null;
 function showStatusToast(message){
   const toast = document.getElementById('statusToast');
@@ -1343,6 +1358,10 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
       waitMsg.textContent = "Your order is ready! Please collect it from the counter. Enjoy! 🥤";
       document.getElementById('reviewBox').style.display = 'block';
       document.getElementById('ratingBox').style.display = 'block';
+      if(!data.customerAcknowledged){
+        window.currentReadyRef = db.ref('orders/' + date + '/' + orderKey);
+        document.getElementById('readyConfirmOverlay').style.display = 'flex';
+      }
     }
     // Ring a tune + show a notification + non-blocking toast whenever the status actually changes
     if(lastKnownStatus !== null && lastKnownStatus !== data.status){
