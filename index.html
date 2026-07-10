@@ -99,6 +99,17 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
 .footer-link.whatsapp{ background:#25D366; color:#fff; }
 .footer-link.insta{ background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
 .footer-link:hover{ opacity:.9; }
+/* ---- status toast (non-blocking, auto-dismiss) ---- */
+.status-toast{
+  position:fixed; top:-80px; left:50%; transform:translateX(-50%); z-index:900;
+  background:var(--clay-dark); color:#fff; padding:14px 24px; border-radius:14px;
+  font-weight:700; font-size:14.5px; box-shadow:0 8px 24px rgba(0,0,0,.3);
+  display:flex; align-items:center; gap:8px; white-space:nowrap;
+  transition:top .4s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+}
+.status-toast.show{ top:18px; }
+
 .progress-bar{ display:flex; align-items:center; justify-content:space-between; margin:16px 0; }
 .progress-step{ flex:1; text-align:center; position:relative; }
 .progress-step .dot{
@@ -535,6 +546,9 @@ input.field:focus{outline:none; border-color:var(--orange);}
 
 <!-- CONFIRMATION SCREEN (hidden, injected after order) -->
 <div class="confirm-screen" id="confirmScreen" style="display:none;"></div>
+
+<!-- STATUS TOAST (non-blocking, auto-dismiss) -->
+<div class="status-toast" id="statusToast"></div>
 
 <script>
 /* ================== OPENING HOURS ================== */
@@ -1133,6 +1147,21 @@ function finalizeOrder(name, phone){
 }
 
 /* ================== CONFIRMATION + LIVE STATUS ================== */
+let toastTimer = null;
+function showStatusToast(message){
+  const toast = document.getElementById('statusToast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+function skipRating(){
+  document.getElementById('ratingBox').style.display = 'none';
+}
+
 function setStar(safeName, n){
   window.ratingSelections[safeName] = n;
   const starsEl = document.getElementById('stars-' + safeName);
@@ -1246,6 +1275,7 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
       <div id="starRows"></div>
       <textarea id="feedbackText" placeholder="Any feedback for us? (optional)" style="width:100%; margin-top:10px; padding:10px; border-radius:9px; border:1px solid #e3d8c2; font-family:'Poppins',sans-serif; font-size:13px; resize:vertical; min-height:60px;"></textarea>
       <button onclick="submitRating('${date}','${orderKey}')" style="width:100%; margin-top:10px; padding:12px; border:none; border-radius:10px; background:var(--leaf); color:#fff; font-weight:700; cursor:pointer;">Submit Feedback</button>
+      <button onclick="skipRating()" style="width:100%; margin-top:8px; padding:10px; border:none; border-radius:10px; background:transparent; color:var(--brown); opacity:.7; font-weight:600; font-size:13px; cursor:pointer;">Skip for now</button>
       <div id="ratingThanks" style="display:none; text-align:center; color:var(--leaf); font-weight:700; margin-top:10px;">🙏 Thanks for your feedback!</div>
     </div>
 
@@ -1314,9 +1344,15 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
       document.getElementById('reviewBox').style.display = 'block';
       document.getElementById('ratingBox').style.display = 'block';
     }
-    // Ring a tune + show a notification whenever the status actually changes (not on the first load)
+    // Ring a tune + show a notification + non-blocking toast whenever the status actually changes
     if(lastKnownStatus !== null && lastKnownStatus !== data.status){
       playDing();
+      const toastMsgs = {
+        Preparing: "👨‍🍳 Order Accepted — Preparing Now!",
+        Ready: "✅ Order Ready for Collection!"
+      };
+      if(toastMsgs[data.status]) showStatusToast(toastMsgs[data.status]);
+
       if('Notification' in window && Notification.permission === 'granted'){
         const msgs = {
           Preparing: "👨‍🍳 Your NS Juice order is now being prepared!",
