@@ -1276,7 +1276,10 @@ function showConfirmation(date, orderKey, orderNumber, placedAt){
     starRowsEl.appendChild(row);
     window.ratingSelections[safeName] = 0;
     window.ratingNameMap = window.ratingNameMap || {};
-    window.ratingNameMap[safeName] = name; // remember the real item name for saving to Firebase later
+    // Strip size suffix like " (S)" / " (M)" / " (L)" so the rating is saved under the
+    // same base item name shown on the menu card (e.g. "Pineapple Juice (S)" -> "Pineapple Juice")
+    const baseName = name.replace(/\s*\([SML]\)\s*$/i, '').trim();
+    window.ratingNameMap[safeName] = baseName;
   });
 
   function setStep(status){
