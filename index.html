@@ -306,6 +306,7 @@ header .sub{font-size:10.5px; letter-spacing:2.5px; opacity:.7; margin-top:4px;}
 }
 .pay-btn:hover{border-color:var(--gold);}
 .pay-btn .pay-icon{font-size:23px; display:block; margin-bottom:5px;}
+.pay-btn .pay-icon-img{width:28px; height:28px; object-fit:contain; display:block; margin:0 auto 5px;}
 .pay-btn.selected{border-color:var(--orange); background:#fff3e6; color:var(--orange); transform:translateY(-2px); box-shadow:0 8px 18px rgba(226,116,42,.25);}
 .pay-note{font-size:11.5px; color:#8a7256; margin-top:9px; text-align:center;}
 input.field{
@@ -456,10 +457,10 @@ input.field:focus{outline:none; border-color:var(--orange);}
     <h4>💳 Select Payment Method</h4>
     <div class="pay-options">
       <button type="button" class="pay-btn" data-method="GPay" onclick="selectPayment('GPay')">
-        <span class="pay-icon">📲</span>Google Pay
+        <img src="images/gpay-logo.png" class="pay-icon-img" alt="Google Pay">Google Pay
       </button>
       <button type="button" class="pay-btn" data-method="Paytm" onclick="selectPayment('Paytm')">
-        <span class="pay-icon">💠</span>Paytm
+        <img src="images/paytm-logo.png" class="pay-icon-img" alt="Paytm">Paytm
       </button>
       <button type="button" class="pay-btn" data-method="Cash" onclick="selectPayment('Cash')">
         <span class="pay-icon">💵</span>Cash
@@ -665,15 +666,15 @@ const menu = [
   { cat:"🥤 Natural Shakes", name:"Black Currant Milk",      img:"images/black-currant-milk.jpg",       s:50, m:60, l:70 },
 
   // SNACKS
-  { cat:"🍴 Snacks Menu", name:"Chai",                price:20, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Hot Coffee",          price:30, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Patties (Aloo)",      price:15, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Patties (Paneer)",    price:20, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Veg Grill Sandwich",  price:50, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Healthy Sandwich",    price:60, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Bun Maska",           price:30, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Hot Chocolate",       price:40, img:"" },
-  { cat:"🍴 Snacks Menu", name:"Kulhad Lassi",        price:40, img:"", popular:true },
+  { cat:"🍴 Snacks Menu", name:"Chai",                price:20, img:"images/chai.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Hot Coffee",          price:30, img:"images/hot-coffee.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Aloo)",      price:15, img:"images/patties-aloo.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Patties (Paneer)",    price:20, img:"images/patties-paneer.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Veg Grill Sandwich",  price:50, img:"images/veg-grill-sandwich.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Healthy Sandwich",    price:60, img:"images/healthy-sandwich.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Bun Maska",           price:30, img:"images/bun-maska.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Hot Chocolate",       price:40, img:"images/hot-chocolate.jpg" },
+  { cat:"🍴 Snacks Menu", name:"Kulhad Lassi",        price:40, img:"images/kulhad-lassi.jpg", popular:true },
 ];
 
 let cart = [];
